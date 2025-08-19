@@ -8,8 +8,8 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 248 250 252;
-    --foreground: 213 27% 13%;
+    --background: 206 29% 29%; /* Primary Blue background */
+    --foreground: 0 0% 100%;
 
     --card: 0 0% 100%;
     --card-foreground: 213 27% 13%;
@@ -26,8 +26,8 @@ All colors MUST be HSL.
     --muted: 241 11% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 45 100% 59%; /* #ffcc29 */
-    --accent-foreground: 206 29% 29%;
+    --accent: 206 29% 29%; /* #2c4869 - Primary Blue */
+    --accent-foreground: 0 0% 100%;
 
     --brand-light-blue: 200 81% 76%; /* #91d8f7 */
     --brand-light-green: 139 38% 70%; /* #9dd3af */
@@ -42,7 +42,7 @@ All colors MUST be HSL.
 
     /* Custom tokens for CV maker */
     --gradient-primary: linear-gradient(135deg, hsl(206 29% 29%), hsl(88 33% 49%));
-    --gradient-hero: linear-gradient(135deg, hsl(206 29% 29%), hsl(45 100% 59%));
+    --gradient-hero: linear-gradient(135deg, hsl(206 29% 29%), hsl(206 29% 29%));
     --shadow-card: 0 4px 6px -1px hsl(220 13% 91% / 0.3);
     --shadow-elegant: 0 10px 25px -5px hsl(217 91% 60% / 0.1);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -85,8 +85,8 @@ All colors MUST be HSL.
     --muted: 213 27% 15%;
     --muted-foreground: 215 16% 65%;
 
-    --accent: 45 100% 65%; /* Lighter version for dark mode */
-    --accent-foreground: 206 29% 15%;
+    --accent: 206 29% 35%; /* Lighter version for dark mode */
+    --accent-foreground: 0 0% 100%;
 
     --brand-light-blue: 200 81% 76%;
     --brand-light-green: 139 38% 70%;
@@ -101,7 +101,7 @@ All colors MUST be HSL.
 
     /* Dark mode gradients */
     --gradient-primary: linear-gradient(135deg, hsl(206 29% 35%), hsl(88 33% 55%));
-    --gradient-hero: linear-gradient(135deg, hsl(206 29% 35%), hsl(45 100% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(206 29% 35%), hsl(206 29% 35%));
     --shadow-card: 0 4px 6px -1px hsl(213 27% 5% / 0.5);
     --shadow-elegant: 0 10px 25px -5px hsl(217 91% 65% / 0.2);
     --sidebar-background: 240 5.9% 10%;
@@ -174,4 +174,26 @@ All colors MUST be HSL.
   .preview-only {
     display: none !important;
   }
+}
+
+/* Ensure input fields are white with proper styling */
+input, textarea, select {
+  background-color: white !important;
+  color: #374151 !important; /* Grey text */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important; /* Light grey placeholder */
+}
+
+/* Ensure button outline variant has proper styling */
+button[data-variant="outline"] {
+  background-color: white !important;
+  color: #2c4869 !important; /* Primary Blue text */
+  border-color: #2c4869 !important;
+}
+
+button[data-variant="outline"]:hover {
+  background-color: #2c4869 !important; /* Primary Blue background on hover */
+  color: white !important;
 }

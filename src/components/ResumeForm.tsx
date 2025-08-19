@@ -364,9 +364,9 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
           <div className="flex items-center space-x-4">
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Upload className="h-4 w-4" />
               <span>Upload Photo</span>

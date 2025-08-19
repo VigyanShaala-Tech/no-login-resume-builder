@@ -153,7 +153,11 @@ export const ResumeBuilder = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div 
+      className="min-h-screen bg-background"
+      style={{ backgroundColor: 'hsl(206 29% 29%)' }}
+    >
+      
       {/* Header */}
       <header className="border-b bg-gradient-primary text-primary-foreground shadow-elegant">
         <div className="container mx-auto px-4 py-6">
@@ -215,10 +219,10 @@ export const ResumeBuilder = () => {
                     return (
                       <Button
                         key={section.id}
-                        variant={activeSection === section.id ? "default" : "outline"}
+                        variant="default"
                         size="sm"
                         onClick={() => setActiveSection(section.id)}
-                        className="flex items-center space-x-2"
+                        className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Icon className="h-4 w-4" />
                         <span>{section.label}</span>
