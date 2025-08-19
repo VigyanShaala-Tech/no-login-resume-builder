@@ -18,44 +18,63 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     });
   };
 
+  // Function to strip HTML tags for clean display in templates
+  const stripHtml = (html: string) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+  };
+
   const renderModernTemplate = () => (
     <div className="bg-white p-8 min-h-[11in] text-gray-900 text-sm leading-relaxed">
       {/* Header */}
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {resumeData.personalInfo.fullName || "Your Name"}
-        </h1>
-        <div className="flex flex-wrap gap-4 text-gray-600 text-sm">
-          {resumeData.personalInfo.email && (
-            <div className="flex items-center gap-1">
-              <Mail className="w-4 h-4" />
-              <span>{resumeData.personalInfo.email}</span>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {resumeData.personalInfo.fullName || "Your Name"}
+            </h1>
+            <div className="flex flex-wrap gap-4 text-gray-600 text-sm">
+              {resumeData.personalInfo.email && (
+                <div className="flex items-center gap-1">
+                  <Mail className="w-4 h-4" />
+                  <span>{resumeData.personalInfo.email}</span>
+                </div>
+              )}
+              {resumeData.personalInfo.phone && (
+                <div className="flex items-center gap-1">
+                  <Phone className="w-4 h-4" />
+                  <span>{resumeData.personalInfo.phone}</span>
+                </div>
+              )}
+              {resumeData.personalInfo.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  <span>{resumeData.personalInfo.location}</span>
+                </div>
+              )}
             </div>
-          )}
-          {resumeData.personalInfo.phone && (
-            <div className="flex items-center gap-1">
-              <Phone className="w-4 h-4" />
-              <span>{resumeData.personalInfo.phone}</span>
+            <div className="flex flex-wrap gap-4 text-blue-600 text-sm mt-2">
+              {resumeData.personalInfo.website && (
+                <div className="flex items-center gap-1">
+                  <Globe className="w-4 h-4" />
+                  <span>{resumeData.personalInfo.website}</span>
+                </div>
+              )}
+              {resumeData.personalInfo.linkedin && (
+                <div className="flex items-center gap-1">
+                  <Linkedin className="w-4 h-4" />
+                  <span>{resumeData.personalInfo.linkedin}</span>
+                </div>
+              )}
             </div>
-          )}
-          {resumeData.personalInfo.location && (
-            <div className="flex items-center gap-1">
-              <MapPin className="w-4 h-4" />
-              <span>{resumeData.personalInfo.location}</span>
-            </div>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-4 text-blue-600 text-sm mt-2">
-          {resumeData.personalInfo.website && (
-            <div className="flex items-center gap-1">
-              <Globe className="w-4 h-4" />
-              <span>{resumeData.personalInfo.website}</span>
-            </div>
-          )}
-          {resumeData.personalInfo.linkedin && (
-            <div className="flex items-center gap-1">
-              <Linkedin className="w-4 h-4" />
-              <span>{resumeData.personalInfo.linkedin}</span>
+          </div>
+          {resumeData.personalInfo.photo && (
+            <div className="ml-6">
+              <img
+                src={resumeData.personalInfo.photo}
+                alt="Profile"
+                className="w-32 h-32 rounded-lg object-cover border-2 border-gray-200"
+              />
             </div>
           )}
         </div>
@@ -67,7 +86,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="text-xl font-semibold text-gray-900 mb-3 pb-1 border-b-2 border-blue-600">
             Professional Summary
           </h2>
-          <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+          <div 
+            className="text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: resumeData.personalInfo.summary }}
+          />
         </section>
       )}
 
@@ -96,7 +118,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   </div>
                 </div>
                 {exp.description && (
-                  <p className="text-gray-700 mt-2 leading-relaxed">{exp.description}</p>
+                  <div 
+                    className="text-gray-700 mt-2 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
                 )}
               </div>
             ))}
@@ -173,8 +198,118 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   </p>
                 )}
                 {project.description && (
-                  <p className="text-gray-700 leading-relaxed">{project.description}</p>
+                  <div 
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: project.description }}
+                  />
                 )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Achievements */}
+      {resumeData.achievements && resumeData.achievements.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-1 border-b-2 border-blue-600">
+            Achievements
+          </h2>
+          <div className="space-y-4">
+            {resumeData.achievements.map((achievement) => (
+              <div key={achievement.id}>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-gray-900">{achievement.title}</h3>
+                  {achievement.date && (
+                    <span className="text-sm text-gray-600">{formatDate(achievement.date)}</span>
+                  )}
+                </div>
+                {achievement.description && (
+                  <div 
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: achievement.description }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Awards */}
+      {resumeData.awards && resumeData.awards.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-1 border-b-2 border-blue-600">
+            Awards
+          </h2>
+          <div className="space-y-4">
+            {resumeData.awards.map((award) => (
+              <div key={award.id}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{award.title}</h3>
+                    <p className="text-gray-700 font-medium">{award.issuer}</p>
+                  </div>
+                  <span className="text-sm text-gray-600">{formatDate(award.date)}</span>
+                </div>
+                {award.description && (
+                  <div 
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: award.description }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Certifications */}
+      {resumeData.certifications && resumeData.certifications.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-1 border-b-2 border-blue-600">
+            Courses & Certifications
+          </h2>
+          <div className="space-y-4">
+            {resumeData.certifications.map((cert) => (
+              <div key={cert.id}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{cert.name}</h3>
+                    <p className="text-gray-700 font-medium">{cert.issuer}</p>
+                    {cert.credentialId && <p className="text-gray-600 text-sm">ID: {cert.credentialId}</p>}
+                  </div>
+                  <div className="text-right text-sm text-gray-600">
+                    <div>{formatDate(cert.date)}</div>
+                    {cert.expiryDate && <div>Expires: {formatDate(cert.expiryDate)}</div>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Publications */}
+      {resumeData.publications && resumeData.publications.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-1 border-b-2 border-blue-600">
+            Publications
+          </h2>
+          <div className="space-y-4">
+            {resumeData.publications.map((pub) => (
+              <div key={pub.id}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{pub.title}</h3>
+                    <p className="text-gray-700 font-medium">{pub.journal}</p>
+                    {pub.authors && <p className="text-gray-600 text-sm">Authors: {pub.authors}</p>}
+                    {pub.link && (
+                      <p className="text-blue-600 text-sm">{pub.link}</p>
+                    )}
+                  </div>
+                  <span className="text-sm text-gray-600">{formatDate(pub.date)}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -187,14 +322,25 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     <div className="bg-white p-8 min-h-[11in] text-gray-900 text-sm leading-relaxed">
       {/* Header */}
       <header className="text-center mb-8 pb-6 border-b-2 border-gray-300">
-        <h1 className="text-3xl font-bold text-gray-900 mb-3">
-          {resumeData.personalInfo.fullName || "Your Name"}
-        </h1>
-        <div className="space-y-1 text-gray-600">
-          {resumeData.personalInfo.location && <div>{resumeData.personalInfo.location}</div>}
-          {resumeData.personalInfo.phone && <div>{resumeData.personalInfo.phone}</div>}
-          {resumeData.personalInfo.email && <div>{resumeData.personalInfo.email}</div>}
-          {resumeData.personalInfo.website && <div className="text-blue-600">{resumeData.personalInfo.website}</div>}
+        <div className="flex flex-col items-center">
+          {resumeData.personalInfo.photo && (
+            <div className="mb-4">
+              <img
+                src={resumeData.personalInfo.photo}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
+              />
+            </div>
+          )}
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            {resumeData.personalInfo.fullName || "Your Name"}
+          </h1>
+          <div className="space-y-1 text-gray-600">
+            {resumeData.personalInfo.location && <div>{resumeData.personalInfo.location}</div>}
+            {resumeData.personalInfo.phone && <div>{resumeData.personalInfo.phone}</div>}
+            {resumeData.personalInfo.email && <div>{resumeData.personalInfo.email}</div>}
+            {resumeData.personalInfo.website && <div className="text-blue-600">{resumeData.personalInfo.website}</div>}
+          </div>
         </div>
       </header>
 
@@ -204,7 +350,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="text-lg font-bold text-gray-900 mb-3 uppercase tracking-wide">
             Objective
           </h2>
-          <p className="text-gray-700 leading-relaxed">{resumeData.personalInfo.summary}</p>
+          <div 
+            className="text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: resumeData.personalInfo.summary }}
+          />
         </section>
       )}
 
@@ -227,7 +376,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   </div>
                 </div>
                 {exp.description && (
-                  <p className="text-gray-700 mt-2 leading-relaxed">{exp.description}</p>
+                  <div 
+                    className="text-gray-700 mt-2 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
                 )}
               </div>
             ))}
@@ -296,9 +448,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       {/* Summary */}
       {resumeData.personalInfo.summary && (
         <section className="mb-10">
-          <p className="text-gray-700 leading-relaxed italic">
-            {resumeData.personalInfo.summary}
-          </p>
+          <div 
+            className="text-gray-700 leading-relaxed italic"
+            dangerouslySetInnerHTML={{ __html: resumeData.personalInfo.summary }}
+          />
         </section>
       )}
 
@@ -318,7 +471,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   <span>{formatDate(exp.startDate)} - {exp.current ? "Present" : formatDate(exp.endDate)}</span>
                 </div>
                 {exp.description && (
-                  <p className="text-gray-700 leading-relaxed">{exp.description}</p>
+                  <div 
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
                 )}
               </div>
             ))}
@@ -380,7 +536,9 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
   return (
     <Card className="w-full max-w-4xl mx-auto overflow-hidden">
       <div className="transform scale-75 origin-top-left w-[133.33%] h-fit">
-        <TemplateComponent />
+        <div key={template}>
+          <TemplateComponent />
+        </div>
       </div>
     </Card>
   );

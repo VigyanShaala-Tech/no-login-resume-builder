@@ -18,6 +18,7 @@ export interface ResumeData {
     website?: string;
     linkedin?: string;
     summary: string;
+    photo?: string; // Base64 encoded image or URL
   };
   experience: Array<{
     id: string;
@@ -51,6 +52,35 @@ export interface ResumeData {
     technologies: string;
     link?: string;
   }>;
+  achievements?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    date?: string;
+  }>;
+  awards?: Array<{
+    id: string;
+    title: string;
+    issuer: string;
+    date: string;
+    description?: string;
+  }>;
+  certifications?: Array<{
+    id: string;
+    name: string;
+    issuer: string;
+    date: string;
+    expiryDate?: string;
+    credentialId?: string;
+  }>;
+  publications?: Array<{
+    id: string;
+    title: string;
+    journal: string;
+    date: string;
+    authors?: string;
+    link?: string;
+  }>;
 }
 
 const initialResumeData: ResumeData = {
@@ -62,11 +92,16 @@ const initialResumeData: ResumeData = {
     website: "",
     linkedin: "",
     summary: "",
+    photo: "",
   },
   experience: [],
   education: [],
   skills: [],
   projects: [],
+  achievements: [],
+  awards: [],
+  certifications: [],
+  publications: [],
 };
 
 export const ResumeBuilder = () => {
@@ -82,6 +117,10 @@ export const ResumeBuilder = () => {
     { id: "education", label: "Education", icon: GraduationCap },
     { id: "skills", label: "Skills", icon: Star },
     { id: "projects", label: "Projects", icon: FileText },
+    { id: "achievements", label: "Achievements", icon: Star },
+    { id: "awards", label: "Awards", icon: Star },
+    { id: "certifications", label: "Certifications", icon: FileText },
+    { id: "publications", label: "Publications", icon: FileText },
   ];
 
   const handleDownload = async () => {

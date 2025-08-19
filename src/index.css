@@ -17,17 +17,21 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 213 27% 13%;
 
-    --primary: 217 91% 60%;
+    --primary: 206 29% 29%; /* #2c4869 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 241 11% 96%;
-    --secondary-foreground: 213 27% 13%;
+    --secondary: 88 33% 49%; /* #69ab4a */
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 241 11% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 142 86% 28%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 45 100% 59%; /* #ffcc29 */
+    --accent-foreground: 206 29% 29%;
+
+    --brand-light-blue: 200 81% 76%; /* #91d8f7 */
+    --brand-light-green: 139 38% 70%; /* #9dd3af */
+    --brand-orange: 22 91% 59%; /* #f58634 */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -37,8 +41,8 @@ All colors MUST be HSL.
     --ring: 217 91% 60%;
 
     /* Custom tokens for CV maker */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%), hsl(142 86% 28%));
+    --gradient-primary: linear-gradient(135deg, hsl(206 29% 29%), hsl(88 33% 49%));
+    --gradient-hero: linear-gradient(135deg, hsl(206 29% 29%), hsl(45 100% 59%));
     --shadow-card: 0 4px 6px -1px hsl(220 13% 91% / 0.3);
     --shadow-elegant: 0 10px 25px -5px hsl(217 91% 60% / 0.1);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -72,17 +76,21 @@ All colors MUST be HSL.
     --popover: 213 27% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 217 91% 65%;
-    --primary-foreground: 213 27% 8%;
+    --primary: 206 29% 35%; /* Lighter version for dark mode */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 213 27% 15%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 88 33% 55%; /* Lighter version for dark mode */
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 213 27% 15%;
     --muted-foreground: 215 16% 65%;
 
-    --accent: 142 86% 35%;
-    --accent-foreground: 213 27% 8%;
+    --accent: 45 100% 65%; /* Lighter version for dark mode */
+    --accent-foreground: 206 29% 15%;
+
+    --brand-light-blue: 200 81% 76%;
+    --brand-light-green: 139 38% 70%;
+    --brand-orange: 22 91% 65%;
 
     --destructive: 0 84% 65%;
     --destructive-foreground: 213 27% 8%;
@@ -92,8 +100,8 @@ All colors MUST be HSL.
     --ring: 217 91% 65%;
 
     /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 65%), hsl(217 91% 75%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 65%), hsl(142 86% 35%));
+    --gradient-primary: linear-gradient(135deg, hsl(206 29% 35%), hsl(88 33% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(206 29% 35%), hsl(45 100% 65%));
     --shadow-card: 0 4px 6px -1px hsl(213 27% 5% / 0.5);
     --shadow-elegant: 0 10px 25px -5px hsl(217 91% 65% / 0.2);
     --sidebar-background: 240 5.9% 10%;

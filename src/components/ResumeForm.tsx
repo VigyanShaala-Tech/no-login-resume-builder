@@ -5,8 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload, Image } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
+import { RichTextEditor } from "./RichTextEditor";
+import { useRef } from "react";
 
 interface ResumeFormProps {
   resumeData: ResumeData;
@@ -15,11 +17,25 @@ interface ResumeFormProps {
 }
 
 export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeFormProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const updatePersonalInfo = (field: string, value: string) => {
     setResumeData({
       ...resumeData,
       personalInfo: { ...resumeData.personalInfo, [field]: value }
     });
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        updatePersonalInfo("photo", result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const addExperience = () => {
@@ -146,6 +162,131 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
     });
   };
 
+  // Achievement functions
+  const addAchievement = () => {
+    const newAchievement = {
+      id: Date.now().toString(),
+      title: "",
+      description: "",
+      date: ""
+    };
+    setResumeData({
+      ...resumeData,
+      achievements: [...(resumeData.achievements || []), newAchievement]
+    });
+  };
+
+  const updateAchievement = (id: string, field: string, value: string) => {
+    setResumeData({
+      ...resumeData,
+      achievements: (resumeData.achievements || []).map(achievement =>
+        achievement.id === id ? { ...achievement, [field]: value } : achievement
+      )
+    });
+  };
+
+  const removeAchievement = (id: string) => {
+    setResumeData({
+      ...resumeData,
+      achievements: (resumeData.achievements || []).filter(achievement => achievement.id !== id)
+    });
+  };
+
+  // Award functions
+  const addAward = () => {
+    const newAward = {
+      id: Date.now().toString(),
+      title: "",
+      issuer: "",
+      date: "",
+      description: ""
+    };
+    setResumeData({
+      ...resumeData,
+      awards: [...(resumeData.awards || []), newAward]
+    });
+  };
+
+  const updateAward = (id: string, field: string, value: string) => {
+    setResumeData({
+      ...resumeData,
+      awards: (resumeData.awards || []).map(award =>
+        award.id === id ? { ...award, [field]: value } : award
+      )
+    });
+  };
+
+  const removeAward = (id: string) => {
+    setResumeData({
+      ...resumeData,
+      awards: (resumeData.awards || []).filter(award => award.id !== id)
+    });
+  };
+
+  // Certification functions
+  const addCertification = () => {
+    const newCertification = {
+      id: Date.now().toString(),
+      name: "",
+      issuer: "",
+      date: "",
+      expiryDate: "",
+      credentialId: ""
+    };
+    setResumeData({
+      ...resumeData,
+      certifications: [...(resumeData.certifications || []), newCertification]
+    });
+  };
+
+  const updateCertification = (id: string, field: string, value: string) => {
+    setResumeData({
+      ...resumeData,
+      certifications: (resumeData.certifications || []).map(cert =>
+        cert.id === id ? { ...cert, [field]: value } : cert
+      )
+    });
+  };
+
+  const removeCertification = (id: string) => {
+    setResumeData({
+      ...resumeData,
+      certifications: (resumeData.certifications || []).filter(cert => cert.id !== id)
+    });
+  };
+
+  // Publication functions
+  const addPublication = () => {
+    const newPublication = {
+      id: Date.now().toString(),
+      title: "",
+      journal: "",
+      date: "",
+      authors: "",
+      link: ""
+    };
+    setResumeData({
+      ...resumeData,
+      publications: [...(resumeData.publications || []), newPublication]
+    });
+  };
+
+  const updatePublication = (id: string, field: string, value: string) => {
+    setResumeData({
+      ...resumeData,
+      publications: (resumeData.publications || []).map(pub =>
+        pub.id === id ? { ...pub, [field]: value } : pub
+      )
+    });
+  };
+
+  const removePublication = (id: string) => {
+    setResumeData({
+      ...resumeData,
+      publications: (resumeData.publications || []).filter(pub => pub.id !== id)
+    });
+  };
+
   const renderPersonalInfo = () => (
     <Card className="shadow-card">
       <CardHeader>
@@ -210,13 +351,51 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
           </div>
         </div>
         <div>
-          <Label htmlFor="summary">Professional Summary</Label>
-          <Textarea
-            id="summary"
+          <RichTextEditor
+            label="Professional Summary"
             value={resumeData.personalInfo.summary}
-            onChange={(e) => updatePersonalInfo("summary", e.target.value)}
+            onChange={(value) => updatePersonalInfo("summary", value)}
             placeholder="Brief professional summary highlighting your key achievements and skills..."
-            rows={4}
+            height="150px"
+          />
+        </div>
+        <div>
+          <Label>Profile Photo (Optional)</Label>
+          <div className="flex items-center space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center space-x-2"
+            >
+              <Upload className="h-4 w-4" />
+              <span>Upload Photo</span>
+            </Button>
+            {resumeData.personalInfo.photo && (
+              <div className="flex items-center space-x-2">
+                <img
+                  src={resumeData.personalInfo.photo}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updatePersonalInfo("photo", "")}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="hidden"
           />
         </div>
       </CardContent>
@@ -299,12 +478,12 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
               )}
             </div>
             <div>
-              <Label>Description</Label>
-              <Textarea
+              <RichTextEditor
+                label="Description"
                 value={exp.description}
-                onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                onChange={(value) => updateExperience(exp.id, "description", value)}
                 placeholder="Describe your responsibilities and achievements..."
-                rows={3}
+                height="100px"
               />
             </div>
           </div>
@@ -517,12 +696,12 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
               </div>
             </div>
             <div>
-              <Label>Description</Label>
-              <Textarea
+              <RichTextEditor
+                label="Description"
                 value={project.description}
-                onChange={(e) => updateProject(project.id, "description", e.target.value)}
+                onChange={(value) => updateProject(project.id, "description", value)}
                 placeholder="Describe the project, your role, and key achievements..."
-                rows={3}
+                height="100px"
               />
             </div>
           </div>
@@ -537,12 +716,302 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
     </Card>
   );
 
+  const renderAchievements = () => (
+    <Card className="shadow-card">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Achievements</CardTitle>
+        <Button onClick={addAchievement} size="sm" className="flex items-center space-x-1">
+          <Plus className="h-4 w-4" />
+          <span>Add Achievement</span>
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {(resumeData.achievements || []).map((achievement) => (
+          <div key={achievement.id} className="p-4 border rounded-lg space-y-4">
+            <div className="flex justify-between items-start">
+              <h4 className="font-medium">Achievement Entry</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => removeAchievement(achievement.id)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Achievement Title</Label>
+                <Input
+                  value={achievement.title}
+                  onChange={(e) => updateAchievement(achievement.id, "title", e.target.value)}
+                  placeholder="Achievement Title"
+                />
+              </div>
+              <div>
+                <Label>Date (Optional)</Label>
+                <Input
+                  type="date"
+                  value={achievement.date}
+                  onChange={(e) => updateAchievement(achievement.id, "date", e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <RichTextEditor
+                label="Description"
+                value={achievement.description}
+                onChange={(value) => updateAchievement(achievement.id, "description", value)}
+                placeholder="Describe your achievement..."
+                height="100px"
+              />
+            </div>
+          </div>
+        ))}
+        {(resumeData.achievements || []).length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No achievements added yet.</p>
+            <p className="text-sm">Click "Add Achievement" to get started.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderAwards = () => (
+    <Card className="shadow-card">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Awards</CardTitle>
+        <Button onClick={addAward} size="sm" className="flex items-center space-x-1">
+          <Plus className="h-4 w-4" />
+          <span>Add Award</span>
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {(resumeData.awards || []).map((award) => (
+          <div key={award.id} className="p-4 border rounded-lg space-y-4">
+            <div className="flex justify-between items-start">
+              <h4 className="font-medium">Award Entry</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => removeAward(award.id)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Award Title</Label>
+                <Input
+                  value={award.title}
+                  onChange={(e) => updateAward(award.id, "title", e.target.value)}
+                  placeholder="Award Title"
+                />
+              </div>
+              <div>
+                <Label>Issuer/Organization</Label>
+                <Input
+                  value={award.issuer}
+                  onChange={(e) => updateAward(award.id, "issuer", e.target.value)}
+                  placeholder="Organization Name"
+                />
+              </div>
+              <div>
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={award.date}
+                  onChange={(e) => updateAward(award.id, "date", e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <RichTextEditor
+                label="Description (Optional)"
+                value={award.description || ""}
+                onChange={(value) => updateAward(award.id, "description", value)}
+                placeholder="Describe the award and your achievement..."
+                height="100px"
+              />
+            </div>
+          </div>
+        ))}
+        {(resumeData.awards || []).length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No awards added yet.</p>
+            <p className="text-sm">Click "Add Award" to get started.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderCertifications = () => (
+    <Card className="shadow-card">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Courses & Certifications</CardTitle>
+        <Button onClick={addCertification} size="sm" className="flex items-center space-x-1">
+          <Plus className="h-4 w-4" />
+          <span>Add Certification</span>
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {(resumeData.certifications || []).map((cert) => (
+          <div key={cert.id} className="p-4 border rounded-lg space-y-4">
+            <div className="flex justify-between items-start">
+              <h4 className="font-medium">Certification Entry</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => removeCertification(cert.id)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Certification/Course Name</Label>
+                <Input
+                  value={cert.name}
+                  onChange={(e) => updateCertification(cert.id, "name", e.target.value)}
+                  placeholder="Certification Name"
+                />
+              </div>
+              <div>
+                <Label>Issuer/Institution</Label>
+                <Input
+                  value={cert.issuer}
+                  onChange={(e) => updateCertification(cert.id, "issuer", e.target.value)}
+                  placeholder="Institution Name"
+                />
+              </div>
+              <div>
+                <Label>Issue Date</Label>
+                <Input
+                  type="date"
+                  value={cert.date}
+                  onChange={(e) => updateCertification(cert.id, "date", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Expiry Date (Optional)</Label>
+                <Input
+                  type="date"
+                  value={cert.expiryDate}
+                  onChange={(e) => updateCertification(cert.id, "expiryDate", e.target.value)}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label>Credential ID (Optional)</Label>
+                <Input
+                  value={cert.credentialId}
+                  onChange={(e) => updateCertification(cert.id, "credentialId", e.target.value)}
+                  placeholder="Credential ID or Certificate Number"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        {(resumeData.certifications || []).length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No certifications added yet.</p>
+            <p className="text-sm">Click "Add Certification" to get started.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderPublications = () => (
+    <Card className="shadow-card">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Publications</CardTitle>
+        <Button onClick={addPublication} size="sm" className="flex items-center space-x-1">
+          <Plus className="h-4 w-4" />
+          <span>Add Publication</span>
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {(resumeData.publications || []).map((pub) => (
+          <div key={pub.id} className="p-4 border rounded-lg space-y-4">
+            <div className="flex justify-between items-start">
+              <h4 className="font-medium">Publication Entry</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => removePublication(pub.id)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Publication Title</Label>
+                <Input
+                  value={pub.title}
+                  onChange={(e) => updatePublication(pub.id, "title", e.target.value)}
+                  placeholder="Publication Title"
+                />
+              </div>
+              <div>
+                <Label>Journal/Conference</Label>
+                <Input
+                  value={pub.journal}
+                  onChange={(e) => updatePublication(pub.id, "journal", e.target.value)}
+                  placeholder="Journal or Conference Name"
+                />
+              </div>
+              <div>
+                <Label>Publication Date</Label>
+                <Input
+                  type="date"
+                  value={pub.date}
+                  onChange={(e) => updatePublication(pub.id, "date", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Authors (Optional)</Label>
+                <Input
+                  value={pub.authors}
+                  onChange={(e) => updatePublication(pub.id, "authors", e.target.value)}
+                  placeholder="Author names"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label>Publication Link (Optional)</Label>
+                <Input
+                  value={pub.link}
+                  onChange={(e) => updatePublication(pub.id, "link", e.target.value)}
+                  placeholder="https://doi.org/..."
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        {(resumeData.publications || []).length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No publications added yet.</p>
+            <p className="text-sm">Click "Add Publication" to get started.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   const sectionComponents = {
     personal: renderPersonalInfo,
     experience: renderExperience,
     education: renderEducation,
     skills: renderSkills,
     projects: renderProjects,
+    achievements: renderAchievements,
+    awards: renderAwards,
+    certifications: renderCertifications,
+    publications: renderPublications,
   };
 
   const CurrentSection = sectionComponents[activeSection as keyof typeof sectionComponents];

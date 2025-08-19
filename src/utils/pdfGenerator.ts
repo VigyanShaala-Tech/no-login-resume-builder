@@ -14,6 +14,8 @@ export const generatePDF = async (elementId: string, filename: string = 'resume.
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
+      removeContainer: true, // This helps reduce the boundary issue
+      logging: false, // Disable logging for cleaner output
     });
 
     const imgData = canvas.toDataURL('image/png');
@@ -24,11 +26,11 @@ export const generatePDF = async (elementId: string, filename: string = 'resume.
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     let heightLeft = imgHeight;
 
-    // Create PDF
+    // Create PDF with no margins to reduce boundary effect
     const pdf = new jsPDF('p', 'mm', 'a4');
     let position = 0;
 
-    // Add first page
+    // Add first page with no margins
     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
 
