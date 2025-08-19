@@ -356,7 +356,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
             value={resumeData.personalInfo.summary}
             onChange={(value) => updatePersonalInfo("summary", value)}
             placeholder="Brief professional summary highlighting your key achievements and skills..."
-            height="150px"
+            height="250px"
           />
         </div>
         <div>
@@ -483,7 +483,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
                 value={exp.description}
                 onChange={(value) => updateExperience(exp.id, "description", value)}
                 placeholder="Describe your responsibilities and achievements..."
-                height="100px"
+                height="200px"
               />
             </div>
           </div>
@@ -701,7 +701,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
                 value={project.description}
                 onChange={(value) => updateProject(project.id, "description", value)}
                 placeholder="Describe the project, your role, and key achievements..."
-                height="100px"
+                height="200px"
               />
             </div>
           </div>
@@ -763,7 +763,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
                 value={achievement.description}
                 onChange={(value) => updateAchievement(achievement.id, "description", value)}
                 placeholder="Describe your achievement..."
-                height="100px"
+                height="200px"
               />
             </div>
           </div>
@@ -833,7 +833,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
                 value={award.description || ""}
                 onChange={(value) => updateAward(award.id, "description", value)}
                 placeholder="Describe the award and your achievement..."
-                height="100px"
+                height="200px"
               />
             </div>
           </div>

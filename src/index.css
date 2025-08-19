@@ -124,3 +124,54 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Rich Text Editor Global Styles */
+.ql-toolbar {
+  position: sticky !important;
+  top: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.ql-editor {
+  text-align: left !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 12px 15px !important;
+}
+
+.ql-editor p {
+  text-align: left !important;
+  margin-bottom: 8px !important;
+}
+
+.ql-editor ul, .ql-editor ol {
+  text-align: left !important;
+  padding-left: 20px !important;
+}
+
+.ql-editor li {
+  text-align: left !important;
+  margin-bottom: 4px !important;
+}
+
+/* Remove borders for PDF generation */
+#resume-preview {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+#resume-preview * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide page break lines during PDF generation */
+@media print {
+  .preview-only {
+    display: none !important;
+  }
+}

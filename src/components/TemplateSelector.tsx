@@ -15,15 +15,15 @@ const templates: Template[] = [
     id: "modern",
     name: "Modern",
     description: "Clean and professional layout",
-    hasPhoto: false,
-    preview: "Clean layout with blue accents"
+    hasPhoto: true,
+    preview: "Clean layout with photo in top-right"
   },
   {
     id: "classic",
     name: "Classic",
     description: "Traditional resume format",
-    hasPhoto: false,
-    preview: "Traditional two-column layout"
+    hasPhoto: true,
+    preview: "Traditional centered layout with photo"
   },
   {
     id: "minimal",
@@ -44,14 +44,14 @@ const templates: Template[] = [
     name: "Creative",
     description: "Eye-catching design with photo",
     hasPhoto: true,
-    preview: "Creative layout with photo section"
+    preview: "Creative layout with colored sections"
   },
   {
     id: "executive",
     name: "Executive",
     description: "Premium layout with photo option",
     hasPhoto: true,
-    preview: "Executive style with optional photo"
+    preview: "Executive style with dark header"
   }
 ];
 
