@@ -1751,7 +1751,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
           <div 
-            className="text-gray-700 leading-tight ml-8"
+            className="text-gray-700 leading-tight text-justify"
             dangerouslySetInnerHTML={{ __html: resumeData.personalInfo.summary }}
           />
         </section>
@@ -1764,7 +1764,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Professional Experience
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="space-y-0 ml-8">
+          <div className="space-y-0 ml-2">
             {resumeData.experience.map((exp) => (
               <div key={exp.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
@@ -1794,7 +1794,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Education
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="space-y-0 ml-8">
+          <div className="space-y-0 ml-2">
             {resumeData.education.map((edu) => (
               <div key={edu.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
@@ -1819,7 +1819,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Skills
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="resumake-classic-skills-grid ml-8">
+          <div className="resumake-classic-skills-grid ml-2">
             {resumeData.skills.map((skill) => (
               <div key={skill.id} className="resumake-classic-skill-item">
                 <span className="resumake-classic-institution">{skill.name}</span>
@@ -1837,7 +1837,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Projects
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="space-y-0 ml-8">
+          <div className="space-y-0 ml-2">
             {resumeData.projects.map((project) => (
               <div key={project.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
@@ -1869,7 +1869,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Achievements
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="space-y-0 ml-8">
+          <div className="space-y-0 ml-2">
             {resumeData.achievements.map((achievement) => (
               <div key={achievement.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
@@ -1898,7 +1898,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Awards
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="space-y-0 ml-8">
+          <div className="space-y-0 ml-2">
             {resumeData.awards.map((award) => (
               <div key={award.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
@@ -1928,7 +1928,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Certifications
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="space-y-0 ml-8">
+          <div className="space-y-0 ml-2">
             {resumeData.certifications.map((cert) => (
               <div key={cert.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
@@ -1958,7 +1958,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             Publications
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
-          <div className="space-y-0 ml-8">
+          <div className="space-y-0 ml-2">
             {resumeData.publications.map((pub) => (
               <div key={pub.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
