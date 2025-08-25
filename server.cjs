@@ -1,12 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const { chromium } = require('playwright');
+const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+
+// Serve static files from dist directory
+app.use(express.static(path.join(__dirname, 'dist')));
 
 app.post('/api/generate-pdf', async (req, res) => {
   try {
@@ -70,6 +74,11 @@ app.post('/api/generate-pdf', async (req, res) => {
   }
 });
 
+// Serve React app for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 app.listen(PORT, () => {
-  console.log(`PDF API server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

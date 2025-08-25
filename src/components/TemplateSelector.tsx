@@ -75,9 +75,19 @@ interface TemplateSelectorProps {
 }
 
 export const TemplateSelector = ({ selectedTemplate, onTemplateSelect }: TemplateSelectorProps) => {
+  // Filter templates based on environment
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  const availableTemplates = isProduction 
+    ? templates.filter(template => 
+        template.id === "resumake-classic" || 
+        template.id === "resumake-classic-single"
+      )
+    : templates;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {templates.map((template) => (
+      {availableTemplates.map((template) => (
         <Card
           key={template.id}
           className={`cursor-pointer transition-all duration-200 hover:shadow-card ${
