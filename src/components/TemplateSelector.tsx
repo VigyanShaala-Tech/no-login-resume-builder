@@ -55,14 +55,14 @@ const templates: Template[] = [
   },
   {
     id: "resumake-classic",
-    name: "Resumake Classic",
+    name: "Classic",
     description: "LaTeX-inspired minimalist design",
     hasPhoto: false,
     preview: "Classic typography with small caps headers"
   },
   {
     id: "resumake-classic-single",
-    name: "Academic with Shaded Headers",
+    name: "Shaded Headers",
     description: "Academic template with gray-shaded section headers",
     hasPhoto: false,
     preview: "Shaded headers with tabular layout"
