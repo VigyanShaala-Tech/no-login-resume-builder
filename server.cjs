@@ -12,6 +12,11 @@ app.use(express.json({ limit: '50mb' }));
 // Serve static files from dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
 app.post('/api/generate-pdf', async (req, res) => {
   try {
     console.log('Received PDF generation request');
@@ -25,9 +30,19 @@ app.post('/api/generate-pdf', async (req, res) => {
     console.log('HTML content length:', html.length);
     console.log('Starting Playwright...');
 
-    // Launch browser
+    // Launch browser with additional options for Render
     const browser = await chromium.launch({
-      headless: true
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ]
     });
 
     console.log('Browser launched');
@@ -70,7 +85,16 @@ app.post('/api/generate-pdf', async (req, res) => {
 
   } catch (error) {
     console.error('PDF generation error:', error);
-    res.status(500).json({ error: 'PDF generation failed: ' + error.message });
+    
+    // Check if it's a Playwright installation issue
+    if (error.message.includes('chromium') || error.message.includes('browser')) {
+      console.error('Playwright browser issue detected. This might be an installation problem.');
+      res.status(500).json({ 
+        error: 'PDF generation failed: Browser not available. Please check Playwright installation.' 
+      });
+    } else {
+      res.status(500).json({ error: 'PDF generation failed: ' + error.message });
+    }
   }
 });
 
