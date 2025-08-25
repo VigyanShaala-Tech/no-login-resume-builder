@@ -50,7 +50,7 @@ export interface ResumeData {
     name: string;
     description: string;
     technologies: string;
-    link?: string;
+    date?: string;
   }>;
   achievements?: Array<{
     id: string;
@@ -137,10 +137,7 @@ export const ResumeBuilder = () => {
     try {
       const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
       await generatePDF('resume-preview', filename);
-      toast({
-        title: "Success!",
-        description: "Your resume has been downloaded successfully.",
-      });
+      // Success notification removed
     } catch (error) {
       toast({
         title: "Download Failed",
@@ -243,9 +240,9 @@ export const ResumeBuilder = () => {
 
           {/* Preview Section */}
           <div className="lg:sticky lg:top-8 lg:h-fit">
-            <Card className="shadow-elegant">
+            <Card className="shadow-elegant bg-[#2c4869] text-white">
               <CardHeader>
-                <CardTitle>Preview</CardTitle>
+                <CardTitle className="text-white">Preview</CardTitle>
               </CardHeader>
               <CardContent>
                 <div id="resume-preview">

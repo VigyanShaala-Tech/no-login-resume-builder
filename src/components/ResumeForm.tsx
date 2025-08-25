@@ -679,15 +679,15 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
                 />
               </div>
               <div>
-                <Label>Project Link (Optional)</Label>
+                <Label>Project Date (Optional)</Label>
                 <Input
-                  value={project.link}
-                  onChange={(e) => updateProject(project.id, "link", e.target.value)}
-                  placeholder="https://github.com/user/project"
+                  type="date"
+                  value={project.date}
+                  onChange={(e) => updateProject(project.id, "date", e.target.value)}
                 />
               </div>
               <div className="md:col-span-2">
-                <Label>Technologies Used</Label>
+                <Label>Skills and Technologies Used</Label>
                 <Input
                   value={project.technologies}
                   onChange={(e) => updateProject(project.id, "technologies", e.target.value)}

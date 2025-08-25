@@ -52,6 +52,20 @@ const templates: Template[] = [
     description: "Premium layout with photo option",
     hasPhoto: true,
     preview: "Executive style with dark header"
+  },
+  {
+    id: "resumake-classic",
+    name: "Resumake Classic",
+    description: "LaTeX-inspired minimalist design",
+    hasPhoto: false,
+    preview: "Classic typography with small caps headers"
+  },
+  {
+    id: "resumake-classic-single",
+    name: "Academic with Shaded Headers",
+    description: "Academic template with gray-shaded section headers",
+    hasPhoto: false,
+    preview: "Shaded headers with tabular layout"
   }
 ];
 
@@ -62,7 +76,7 @@ interface TemplateSelectorProps {
 
 export const TemplateSelector = ({ selectedTemplate, onTemplateSelect }: TemplateSelectorProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {templates.map((template) => (
         <Card
           key={template.id}
