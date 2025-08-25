@@ -30,17 +30,13 @@ app.post('/api/generate-pdf', async (req, res) => {
     console.log('HTML content length:', html.length);
     console.log('Starting Playwright...');
 
-    // Launch browser with additional options for Render
+    // Launch browser with Render-specific configuration
     const browser = await chromium.launch({
       headless: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
         '--disable-gpu'
       ]
     });
