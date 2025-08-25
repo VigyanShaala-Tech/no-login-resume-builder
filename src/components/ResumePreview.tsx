@@ -1988,14 +1988,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     <div className="bg-white p-8 min-h-[11in] text-gray-900 text-sm leading-relaxed academic-body academic-content">
       {/* Header */}
       <header className="mb-3">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-end">
           <div className="flex-1">
-            <h1 className="text-xl text-black leading-tight academic-name">
+            <h1 className="text-2xl text-black leading-tight academic-name whitespace-nowrap">
               {resumeData.personalInfo.fullName || "Your Name"}
             </h1>
           </div>
-          <div className="text-right text-xs text-black">
-            <div className="flex items-center space-x-1">
+          <div className="text-right text-black">
+            <div className="flex items-center space-x-1 flex-wrap justify-end">
               {resumeData.personalInfo.email && (
                 <>
                   <span>{resumeData.personalInfo.email}</span>
@@ -2005,6 +2005,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
               {resumeData.personalInfo.phone && (
                 <>
                   <span>{resumeData.personalInfo.phone}</span>
+                  {resumeData.personalInfo.linkedin && <span>|</span>}
+                </>
+              )}
+              {resumeData.personalInfo.linkedin && (
+                <>
+                  <span>{resumeData.personalInfo.linkedin}</span>
                   {resumeData.personalInfo.location && <span>|</span>}
                 </>
               )}
@@ -2024,7 +2030,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           </h2>
           <div>
             <div 
-              className="text-black leading-relaxed"
+              className="text-black leading-relaxed text-justify -ml-2"
               dangerouslySetInnerHTML={{ __html: resumeData.personalInfo.summary }}
             />
           </div>
@@ -2037,23 +2043,25 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="academic-shaded-header">
             Experience
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 -ml-2">
             {resumeData.experience.map((exp) => (
               <div key={exp.id} className="experience-item mb-3">
-                <div className="flex justify-between items-start mb-1">
+                <div className="flex justify-between items-start mb-0">
                   <div className="flex-1">
-                    <h3 className="font-bold text-black">{exp.company}</h3>
-                    <p className="italic text-black">{exp.position}</p>
+                    <h3 className="font-bold text-black">
+                      {exp.company}
+                      {exp.location && `, ${exp.location}`}
+                    </h3>
+                    <p className="font-bold text-black mb-0 ml-1">{exp.position}</p>
                   </div>
                   <div className="text-right text-sm text-black">
-                    <div>{exp.location}</div>
                     <div>{formatDate(exp.startDate)} | {exp.endDate ? formatDate(exp.endDate) : "Present"}</div>
                   </div>
                 </div>
                 {exp.description && (
-                  <div className="mt-2">
+                  <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed"
+                      className="text-black leading-relaxed text-justify ml-2"
                       dangerouslySetInnerHTML={{ __html: exp.description }}
                     />
                   </div>
@@ -2066,19 +2074,17 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
 
       {/* Skills */}
       {resumeData.skills.length > 0 && (
-        <section className="mb-4">
+        <section className="mb-0 skills-section">
           <h2 className="academic-shaded-header">
             Skills
           </h2>
-          <div>
-            <div className="text-black leading-relaxed">
-              {resumeData.skills.map((skill, index) => (
-                <span key={skill.id}>
-                  {skill.name}
-                  {index < resumeData.skills.length - 1 ? ", " : ""}
-                </span>
-              ))}
-            </div>
+          <div className="resumake-classic-skills-grid ml-2">
+            {resumeData.skills.map((skill) => (
+              <div key={skill.id} className="resumake-classic-skill-item">
+                <span className="resumake-classic-institution">{skill.name}</span>
+                <span className="resumake-classic-skill-level">{skill.level}</span>
+              </div>
+            ))}
           </div>
         </section>
       )}
@@ -2089,7 +2095,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="academic-shaded-header">
             Projects
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 -ml-2">
             {resumeData.projects.map((project) => (
               <div key={project.id} className="project-item mb-3">
                 <div className="flex justify-between items-start mb-1">
@@ -2101,16 +2107,16 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   </div>
                 </div>
                 {project.description && (
-                  <div className="mt-1">
+                  <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed"
+                      className="text-black leading-relaxed text-justify ml-2"
                       dangerouslySetInnerHTML={{ __html: project.description }}
                     />
                   </div>
                 )}
                 {project.technologies && (
                   <div className="mt-1 text-sm text-black">
-                    <span className="font-medium">Technologies:</span> {project.technologies}
+                    <span className="font-bold">Skills:</span> {project.technologies}
                   </div>
                 )}
               </div>
@@ -2121,28 +2127,29 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
 
       {/* Education */}
       {resumeData.education.length > 0 && (
-        <section className="mb-4">
+        <section className="mb-2">
           <h2 className="academic-shaded-header">
             Education
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-0 -ml-2">
             {resumeData.education.map((edu) => (
-              <div key={edu.id} className="education-item mb-3">
-                <div className="flex justify-between items-start mb-1">
+              <div key={edu.id} className="education-item">
+                <div className="flex justify-between items-start mb-0">
                   <div className="flex-1">
-                    <h3 className="font-bold text-black">{edu.school}</h3>
-                    <p className="italic text-black">{edu.degree}</p>
+                    <h3 className="font-bold text-black mb-0">
+                      {edu.school}
+                      {edu.location && `, ${edu.location}`}
+                    </h3>
+                    <p className="italic text-black mb-0">
+                      {edu.degree}
+                      {edu.field && `, ${edu.field}`}
+                      {edu.gpa && `, GPA: ${edu.gpa}`}
+                    </p>
                   </div>
                   <div className="text-right text-sm text-black">
-                    <div>{edu.location}</div>
                     <div>{formatDate(edu.startDate)} | {edu.endDate ? formatDate(edu.endDate) : "Present"}</div>
                   </div>
                 </div>
-                {edu.gpa && (
-                  <div className="mt-1 text-sm text-black">
-                    <span className="font-medium">GPA:</span> {edu.gpa}
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -2155,10 +2162,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="academic-shaded-header">
             Achievements
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 -ml-2">
             {resumeData.achievements.map((achievement) => (
               <div key={achievement.id} className="achievement-item mb-3">
-                <div className="flex justify-between items-start mb-1">
+                <div className="flex justify-between items-start mb-0">
                   <div className="flex-1">
                     <h3 className="font-bold text-black">{achievement.title}</h3>
                   </div>
@@ -2167,9 +2174,9 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   </div>
                 </div>
                 {achievement.description && (
-                  <div className="mt-1">
+                  <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed"
+                      className="text-black leading-relaxed text-justify ml-2"
                       dangerouslySetInnerHTML={{ __html: achievement.description }}
                     />
                   </div>
@@ -2186,10 +2193,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="academic-shaded-header">
             Awards
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 -ml-2">
             {resumeData.awards.map((award) => (
               <div key={award.id} className="award-item mb-3">
-                <div className="flex justify-between items-start mb-1">
+                <div className="flex justify-between items-start mb-0">
                   <div className="flex-1">
                     <h3 className="font-bold text-black">{award.title}</h3>
                   </div>
@@ -2198,9 +2205,9 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   </div>
                 </div>
                 {award.description && (
-                  <div className="mt-1">
+                  <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed"
+                      className="text-black leading-relaxed text-justify ml-2"
                       dangerouslySetInnerHTML={{ __html: award.description }}
                     />
                   </div>
@@ -2217,7 +2224,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="academic-shaded-header">
             Certifications
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 -ml-2">
             {resumeData.certifications.map((cert) => (
               <div key={cert.id} className="certification-item mb-3">
                 <div className="flex justify-between items-start mb-1">
@@ -2246,24 +2253,24 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <h2 className="academic-shaded-header">
             Publications
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-1 -ml-2">
             {resumeData.publications.map((pub) => (
-              <div key={pub.id} className="publication-item mb-3">
-                <div className="flex justify-between items-start mb-1">
+              <div key={pub.id} className="publication-item">
+                <div className="flex justify-between items-start mb-0">
                   <div className="flex-1">
                     <h3 className="font-bold text-black">{pub.title}</h3>
                     {pub.journal && <p className="italic text-black">{pub.journal}</p>}
                     {pub.authors && <p className="text-sm text-black">Authors: {pub.authors}</p>}
+                    {pub.link && (
+                      <div className="text-sm text-blue-600 -mt-1">
+                        {pub.link}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right text-sm text-black">
                     {pub.date && <div>{formatDate(pub.date)}</div>}
                   </div>
                 </div>
-                {pub.link && (
-                  <div className="mt-1 text-sm text-blue-600">
-                    {pub.link}
-                  </div>
-                )}
               </div>
             ))}
           </div>
