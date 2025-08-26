@@ -13,7 +13,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
-      month: "short",
+      month: "long",
       year: "numeric"
     });
   };
