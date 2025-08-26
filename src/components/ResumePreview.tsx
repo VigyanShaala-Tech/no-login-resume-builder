@@ -13,7 +13,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
-      month: "long",
+      month: "short",
       year: "numeric"
     });
   };
@@ -2103,7 +2103,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <h3 className="font-bold text-black">{project.name}</h3>
                   </div>
                   <div className="text-right text-sm text-black">
-                    {project.date && <div>{project.date}</div>}
+                    {project.date && <div>{formatDate(project.date)}</div>}
                   </div>
                 </div>
                 {project.description && (
@@ -2170,7 +2170,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <h3 className="font-bold text-black">{achievement.title}</h3>
                   </div>
                   <div className="text-right text-sm text-black">
-                    {achievement.date && <div>{achievement.date}</div>}
+                    {achievement.date && <div>{formatDate(achievement.date)}</div>}
                   </div>
                 </div>
                 {achievement.description && (
@@ -2201,7 +2201,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <h3 className="font-bold text-black">{award.title}</h3>
                   </div>
                   <div className="text-right text-sm text-black">
-                    {award.date && <div>{award.date}</div>}
+                    {award.date && <div>{formatDate(award.date)}</div>}
                   </div>
                 </div>
                 {award.description && (
@@ -2233,7 +2233,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.issuer && <p className="italic text-black">{cert.issuer}</p>}
                   </div>
                   <div className="text-right text-sm text-black">
-                    {cert.date && <div>{cert.date}</div>}
+                    {cert.date && <div>{formatDate(cert.date)}</div>}
                   </div>
                 </div>
                 {cert.credentialId && (
