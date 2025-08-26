@@ -235,6 +235,7 @@ export const ResumeBuilder = () => {
               resumeData={resumeData}
               setResumeData={setResumeData}
               activeSection={activeSection}
+              selectedTemplate={selectedTemplate}
             />
           </div>
 

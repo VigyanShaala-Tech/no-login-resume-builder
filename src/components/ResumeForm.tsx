@@ -14,10 +14,15 @@ interface ResumeFormProps {
   resumeData: ResumeData;
   setResumeData: (data: ResumeData) => void;
   activeSection: string;
+  selectedTemplate: string;
 }
 
-export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeFormProps) => {
+export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedTemplate }: ResumeFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Check if current template supports photos
+  const templatesWithPhoto = ['modern', 'classic', 'creative', 'executive'];
+  const supportsPhoto = templatesWithPhoto.includes(selectedTemplate);
   
   const updatePersonalInfo = (field: string, value: string) => {
     setResumeData({
@@ -359,45 +364,47 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection }: ResumeF
             height="250px"
           />
         </div>
-        <div>
-          <Label>Profile Photo (Optional)</Label>
-          <div className="flex items-center space-x-4">
-            <Button
-              type="button"
-              variant="default"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Upload className="h-4 w-4" />
-              <span>Upload Photo</span>
-            </Button>
-            {resumeData.personalInfo.photo && (
-              <div className="flex items-center space-x-2">
-                <img
-                  src={resumeData.personalInfo.photo}
-                  alt="Profile"
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => updatePersonalInfo("photo", "")}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+        {supportsPhoto && (
+          <div>
+            <Label>Profile Photo (Optional)</Label>
+            <div className="flex items-center space-x-4">
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center space-x-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <Upload className="h-4 w-4" />
+                <span>Upload Photo</span>
+              </Button>
+              {resumeData.personalInfo.photo && (
+                <div className="flex items-center space-x-2">
+                  <img
+                    src={resumeData.personalInfo.photo}
+                    alt="Profile"
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updatePersonalInfo("photo", "")}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoUpload}
-            className="hidden"
-          />
-        </div>
+        )}
       </CardContent>
     </Card>
   );
