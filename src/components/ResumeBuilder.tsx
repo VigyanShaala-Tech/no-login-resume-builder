@@ -134,6 +134,15 @@ export const ResumeBuilder = () => {
       return;
     }
 
+    if (!resumeData.personalInfo.email) {
+      toast({
+        title: "Missing Information",
+        description: "Please add your email address before downloading your resume.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGeneratingPDF(true);
     try {
       const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;

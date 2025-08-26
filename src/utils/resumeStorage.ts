@@ -77,7 +77,7 @@ export interface ResumeData {
 export const storeResumeData = async (resumeData: ResumeData, templateId: string) => {
   try {
     const { data, error } = await supabase
-      .from('resume_builder_downloads')
+      .from('2resume_builder_downloads')
       .insert({
         // Personal Info
         full_name: resumeData.personalInfo.fullName,
@@ -116,7 +116,7 @@ export const storeResumeData = async (resumeData: ResumeData, templateId: string
 export const updateDownloadCount = async (resumeId: string) => {
   try {
     const { data, error } = await supabase
-      .from('resume_builder_downloads')
+      .from('2resume_builder_downloads')
       .update({ 
         download_count: supabase.rpc('increment_download_count'),
         last_downloaded: new Date().toISOString()
