@@ -34,6 +34,15 @@ app.post('/api/generate-pdf', async (req, res) => {
     console.log('HTML content length:', html.length);
     console.log('Starting Playwright...');
 
+    // Try to install browser if not available
+    try {
+      const { execSync } = require('child_process');
+      execSync('npx playwright install chromium', { stdio: 'pipe' });
+      console.log('Browser installed successfully');
+    } catch (installError) {
+      console.log('Browser installation failed, continuing with existing setup');
+    }
+
     // Launch browser with Render-specific configuration
     const browser = await chromium.launch({
       headless: true,
