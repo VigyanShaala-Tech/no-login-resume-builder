@@ -34,8 +34,38 @@ app.post('/api/generate-pdf', async (req, res) => {
     console.log('HTML content length:', html.length);
     console.log('Starting Playwright...');
 
+    // Find browser path with fallback options
+    const fs = require('fs');
+    const path = require('path');
+
+    const findBrowserPath = () => {
+      // First, try the known working path (1E approach)
+      const knownPath = '/opt/render/project/.cache/playwright/chromium_headless_shell-1187/chrome-linux/headless_shell';
+      if (fs.existsSync(knownPath)) {
+        console.log('Found browser at known path:', knownPath);
+        return knownPath;
+      }
+      
+      // If not found, try multiple possible paths (1F approach)
+      const possiblePaths = [
+        '/opt/render/.cache/playwright/chromium_headless_shell-1187/chrome-linux/headless_shell',
+        path.join(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium_headless_shell-1187', 'chrome-linux', 'headless_shell')
+      ];
+      
+      for (const browserPath of possiblePaths) {
+        if (fs.existsSync(browserPath)) {
+          console.log('Found browser at:', browserPath);
+          return browserPath;
+        }
+      }
+      
+      console.log('Browser not found in any expected location, using default');
+      return undefined;
+    };
+
     // Launch browser with Render-specific configuration
     const browser = await chromium.launch({
+      executablePath: findBrowserPath(),
       headless: true,
       args: [
         '--no-sandbox',
