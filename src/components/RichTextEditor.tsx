@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,21 @@ export const RichTextEditor = ({
   placeholder = "Enter text...",
   height = "200px", // Increased default height
 }: RichTextEditorProps) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Double the height for mobile devices
+  const mobileHeight = isMobile ? `calc(${height} * 2)` : height;
   const modules = {
     toolbar: [
       [{ 'font': [] }],
@@ -50,7 +65,7 @@ export const RichTextEditor = ({
           placeholder={placeholder}
           modules={modules}
           formats={formats}
-          style={{ height }}
+          style={{ height: mobileHeight }}
           className="rich-text-editor"
         />
       </div>
@@ -64,14 +79,15 @@ export const RichTextEditor = ({
             border-bottom: 1px solid #e2e8f0 !important;
           }
           .rich-text-editor .ql-container {
-            min-height: calc(${height} - 42px) !important;
+            min-height: calc(${mobileHeight} - 42px) !important;
           }
           .rich-text-editor .ql-editor {
-            min-height: calc(${height} - 42px) !important;
+            min-height: calc(${mobileHeight} - 42px) !important;
             font-size: 14px !important;
             line-height: 1.6 !important;
             text-align: left !important;
-            padding: 12px 15px !important;
+            padding: 12px 15px 12px 15px !important;
+            padding-top: 60px !important;
           }
           .rich-text-editor .ql-editor p {
             text-align: left !important;
