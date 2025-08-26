@@ -577,8 +577,8 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                   onChange={(e) => updateEducation(edu.id, "endDate", e.target.value)}
                 />
               </div>
-              <div>
-                <Label>GPA (Optional)</Label>
+                             <div>
+                 <Label>Write your GPA or Percentage (Optional)</Label>
                 <Input
                   value={edu.gpa}
                   onChange={(e) => updateEducation(edu.id, "gpa", e.target.value)}

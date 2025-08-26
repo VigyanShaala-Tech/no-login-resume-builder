@@ -152,7 +152,14 @@ export const ResumeBuilder = () => {
       
       if (storageError) {
         console.error('Failed to store resume data:', storageError);
-        // Don't block PDF download if storage fails
+        // Show error to user but don't block PDF download
+        toast({
+          title: "Data Storage Warning",
+          description: "Resume downloaded successfully, but data storage failed. Please check your connection.",
+          variant: "destructive",
+        });
+      } else {
+        console.log('Resume data stored successfully to Supabase');
       }
       
       // Generate and download PDF

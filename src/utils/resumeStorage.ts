@@ -76,6 +76,18 @@ export interface ResumeData {
 
 export const storeResumeData = async (resumeData: ResumeData, templateId: string) => {
   try {
+    // Check if Supabase is properly configured
+    if (!supabase) {
+      console.error('Supabase client is not initialized')
+      return { data: null, error: 'Supabase client not initialized' }
+    }
+
+    console.log('Attempting to store resume data...', {
+      fullName: resumeData.personalInfo.fullName,
+      email: resumeData.personalInfo.email,
+      templateId: templateId
+    })
+
     const { data, error } = await supabase
       .from('TWO_resume_builder_downloads')
       .insert({
@@ -101,17 +113,38 @@ export const storeResumeData = async (resumeData: ResumeData, templateId: string
       .select()
 
     if (error) {
-      console.error('Error storing resume data:', error)
+      console.error('Supabase error storing resume data:', error)
       return { data: null, error }
     }
 
     console.log('Resume data stored successfully:', data)
     return { data, error: null }
   } catch (error) {
-    console.error('Error storing resume data:', error)
+    console.error('Exception storing resume data:', error)
     return { data: null, error }
   }
 }
+
+export const testSupabaseConnection = async () => {
+  try {
+    console.log('Testing Supabase connection...');
+    const { data, error } = await supabase
+      .from('TWO_resume_builder_downloads')
+      .select('count')
+      .limit(1);
+    
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+      return false;
+    }
+    
+    console.log('Supabase connection test successful');
+    return true;
+  } catch (error) {
+    console.error('Supabase connection test exception:', error);
+    return false;
+  }
+};
 
 export const updateDownloadCount = async (resumeId: string) => {
   try {
