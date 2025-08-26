@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server.cjs",
-    "build:render": "npm run build && npx playwright install chromium && npm run start"
+    "build:render": "npm run build && npx playwright install chromium --with-deps && npm run start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

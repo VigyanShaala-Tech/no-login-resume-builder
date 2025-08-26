@@ -91,7 +91,7 @@ export const storeResumeData = async (resumeData: ResumeData, templateId: string
     })
 
     const { data, error } = await supabase
-      .from('TWO_resume_builder_downloads')
+      .from('two_resume_builder_downloads')
       .insert({
         // Personal Info
         full_name: resumeData.personalInfo.fullName,
@@ -132,7 +132,7 @@ export const testSupabaseConnection = async () => {
     console.log('Testing Supabase connection...');
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('TWO_resume_builder_downloads')
+      .from('two_resume_builder_downloads')
       .select('count')
       .limit(1);
     
@@ -153,7 +153,7 @@ export const updateDownloadCount = async (resumeId: string) => {
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('TWO_resume_builder_downloads')
+      .from('two_resume_builder_downloads')
       .update({ 
         download_count: supabase.rpc('increment_download_count'),
         last_downloaded: new Date().toISOString()
