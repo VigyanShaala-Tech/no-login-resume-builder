@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server.cjs",
-    "build:render": "npm run build && npm run start"
+    "build:render": "npm run build && npm run start",
+    "render:build": "npm install && PLAYWRIGHT_BROWSERS_PATH=/opt/render/.cache/playwright npx playwright install chromium && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
