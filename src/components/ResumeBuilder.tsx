@@ -8,6 +8,7 @@ import { ResumeForm } from "./ResumeForm";
 import { ResumePreview } from "./ResumePreview";
 import { TemplateSelector } from "./TemplateSelector";
 import { generatePDF } from "@/utils/pdfGenerator";
+import { storeResumeData } from "@/utils/resumeStorage";
 
 export interface ResumeData {
   personalInfo: {
@@ -136,8 +137,18 @@ export const ResumeBuilder = () => {
     setIsGeneratingPDF(true);
     try {
       const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
+      
+      // Store resume data to Supabase
+      const { error: storageError } = await storeResumeData(resumeData, selectedTemplate);
+      
+      if (storageError) {
+        console.error('Failed to store resume data:', storageError);
+        // Don't block PDF download if storage fails
+      }
+      
+      // Generate and download PDF
       await generatePDF('resume-preview', filename);
-      // Success notification removed
+      
     } catch (error) {
       toast({
         title: "Download Failed",
