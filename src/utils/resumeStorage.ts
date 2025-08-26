@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase'
+import { getSupabaseClient } from '../lib/supabase'
 
 export interface ResumeData {
   personalInfo: {
@@ -76,6 +76,8 @@ export interface ResumeData {
 
 export const storeResumeData = async (resumeData: ResumeData, templateId: string) => {
   try {
+    const supabase = getSupabaseClient()
+    
     // Check if Supabase is properly configured
     if (!supabase) {
       console.error('Supabase client is not initialized')
@@ -128,6 +130,7 @@ export const storeResumeData = async (resumeData: ResumeData, templateId: string
 export const testSupabaseConnection = async () => {
   try {
     console.log('Testing Supabase connection...');
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('TWO_resume_builder_downloads')
       .select('count')
@@ -148,6 +151,7 @@ export const testSupabaseConnection = async () => {
 
 export const updateDownloadCount = async (resumeId: string) => {
   try {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('TWO_resume_builder_downloads')
       .update({ 
