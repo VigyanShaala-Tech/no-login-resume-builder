@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-let supabase: any = null
+let supabaseClient: any = null
 
 export const getSupabaseClient = () => {
-  if (!supabase) {
+  if (!supabaseClient) {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
@@ -12,10 +12,10 @@ export const getSupabaseClient = () => {
       return null
     }
 
-    supabase = createClient(supabaseUrl, supabaseKey)
+    supabaseClient = createClient(supabaseUrl, supabaseKey)
   }
   
-  return supabase
+  return supabaseClient
 }
 
 // For backward compatibility
