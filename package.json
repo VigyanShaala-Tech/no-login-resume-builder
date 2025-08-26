@@ -10,8 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server.cjs",
-    "build:render": "npm run build && npm run start",
-    "postinstall": "npx playwright install chromium || echo 'Playwright installation failed, will retry at runtime'"
+    "build:render": "npm run build && npm run start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
