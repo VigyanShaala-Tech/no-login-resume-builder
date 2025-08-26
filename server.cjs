@@ -36,9 +36,6 @@ app.post('/api/generate-pdf', async (req, res) => {
 
     // Launch browser with Render-specific configuration
     const browser = await chromium.launch({
-      executablePath: process.env.PLAYWRIGHT_BROWSERS_PATH 
-        ? `${process.env.PLAYWRIGHT_BROWSERS_PATH}/chromium*/chrome-linux/chrome` 
-        : undefined,
       headless: true,
       args: [
         '--no-sandbox',
