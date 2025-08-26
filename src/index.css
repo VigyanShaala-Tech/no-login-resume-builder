@@ -375,6 +375,24 @@ button[data-variant="outline"]:hover {
   margin: 0 !important;
 }
 
+/* Ensure bullets work in Classic template summary */
+.text-gray-700 ul {
+  list-style: disc !important;
+  padding-left: 20px !important;
+  margin: 8px 0 !important;
+}
+
+.text-gray-700 ol {
+  list-style: decimal !important;
+  padding-left: 20px !important;
+  margin: 8px 0 !important;
+}
+
+.text-gray-700 li {
+  margin-bottom: 4px !important;
+  display: list-item !important;
+}
+
 .classic-content li {
   display: flex !important;
   align-items: flex-start !important;

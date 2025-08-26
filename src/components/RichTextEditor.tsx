@@ -87,7 +87,7 @@ export const RichTextEditor = ({
              line-height: 1.6 !important;
              text-align: left !important;
              padding: 12px 15px 12px 15px !important;
-             padding-top: 120px !important;
+                           padding-top: ${isMobile ? '25px' : '12px'} !important;
            }
           .rich-text-editor .ql-editor p {
             text-align: left !important;
