@@ -81,14 +81,14 @@ export const RichTextEditor = ({
           .rich-text-editor .ql-container {
             min-height: calc(${mobileHeight} - 42px) !important;
           }
-          .rich-text-editor .ql-editor {
-            min-height: calc(${mobileHeight} - 42px) !important;
-            font-size: 14px !important;
-            line-height: 1.6 !important;
-            text-align: left !important;
-            padding: 12px 15px 12px 15px !important;
-            padding-top: 60px !important;
-          }
+                     .rich-text-editor .ql-editor {
+             min-height: calc(${mobileHeight} - 42px) !important;
+             font-size: 14px !important;
+             line-height: 1.6 !important;
+             text-align: left !important;
+             padding: 12px 15px 12px 15px !important;
+             padding-top: 120px !important;
+           }
           .rich-text-editor .ql-editor p {
             text-align: left !important;
             margin-bottom: 8px !important;
