@@ -36,6 +36,7 @@ app.post('/api/generate-pdf', async (req, res) => {
 
     // Launch browser with Render-specific configuration
     const browser = await chromium.launch({
+      executablePath: '/opt/render/project/.cache/playwright/chromium_headless_shell-1187/chrome-linux/headless_shell',
       headless: true,
       args: [
         '--no-sandbox',
