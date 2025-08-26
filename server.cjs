@@ -1,3 +1,7 @@
+// Set Playwright environment variables for Render
+process.env.PLAYWRIGHT_BROWSERS_PATH = '0';
+process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = '1';
+
 const express = require('express');
 const cors = require('cors');
 const { chromium } = require('playwright');
