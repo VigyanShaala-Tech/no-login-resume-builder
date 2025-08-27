@@ -186,19 +186,17 @@ export const ResumeBuilder = () => {
       <header className="border-b bg-gradient-primary text-primary-foreground shadow-elegant">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center justify-center flex-1">
-              <div className="flex items-center space-x-3">
-                <img 
-                  src="/Logo2.jpg" 
-                  alt="VigyanShaala" 
-                  className="h-8 w-auto"
-                />
-                <div>
-                  <h1 className="text-2xl font-bold">VigyanShaala's Free Professional CV Builder</h1>
-                  <p className="text-primary-foreground/80 text-sm">
-                    Create professional resumes and CVs instantly
-                  </p>
-                </div>
+            <div className="flex items-center space-x-4">
+              <img 
+                src="/Logo2.jpg" 
+                alt="VigyanShaala" 
+                className="h-12 w-auto"
+              />
+              <div>
+                <h1 className="text-2xl font-bold">VigyanShaala's Free Professional CV Builder</h1>
+                <p className="text-primary-foreground/80 text-sm">
+                  Create professional resumes and CVs instantly
+                </p>
               </div>
             </div>
             <Button 
