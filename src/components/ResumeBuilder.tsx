@@ -107,7 +107,7 @@ const initialResumeData: ResumeData = {
 
 export const ResumeBuilder = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
-  const [selectedTemplate, setSelectedTemplate] = useState("modern");
+  const [selectedTemplate, setSelectedTemplate] = useState("resumake-classic");
   const [activeSection, setActiveSection] = useState("personal");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { toast } = useToast();
@@ -187,11 +187,15 @@ export const ResumeBuilder = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <FileText className="h-8 w-8" />
+              <img 
+                src="/vigyanshaala-logo.png" 
+                alt="VigyanShaala" 
+                className="h-8 w-auto"
+              />
               <div>
-                <h1 className="text-2xl font-bold">CV Builder</h1>
+                <h1 className="text-2xl font-bold">Resume and CV Builder</h1>
                 <p className="text-primary-foreground/80 text-sm">
-                  Create professional resumes instantly
+                  Create professional resumes and CVs instantly
                 </p>
               </div>
             </div>

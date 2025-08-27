@@ -63,7 +63,7 @@ const templates: Template[] = [
   {
     id: "resumake-classic-single",
     name: "Shaded Headers",
-    description: "Academic template with gray-shaded section headers",
+    description: "Academic, gray-shaded",
     hasPhoto: false,
     preview: "Shaded headers with tabular layout"
   }
@@ -113,10 +113,44 @@ export const TemplateSelector = ({ selectedTemplate, onTemplateSelect }: Templat
             </div>
             
             <div className="space-y-2">
-              <div className="h-20 bg-muted rounded border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
-                <span className="text-xs text-muted-foreground text-center px-2">
-                  {template.preview}
-                </span>
+              {/* Visual Template Preview */}
+              <div className="h-20 bg-white rounded border border-gray-200 overflow-hidden relative">
+                {template.id === "resumake-classic" && (
+                  <div className="p-2 h-full">
+                    {/* Classic Template Preview */}
+                    <div className="text-center mb-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-gray-800">JOHN DOE</div>
+                      <div className="text-[8px] text-gray-600">Software Engineer</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-[8px] font-bold uppercase tracking-wide text-gray-700 border-b border-gray-300 pb-0.5">EXPERIENCE</div>
+                      <div className="text-[8px] text-gray-600 pl-1">• Senior Developer at Tech Corp</div>
+                    </div>
+                  </div>
+                )}
+                
+                {template.id === "resumake-classic-single" && (
+                  <div className="p-2 h-full">
+                    {/* Shaded Headers Template Preview */}
+                    <div className="text-center mb-1">
+                      <div className="text-xs font-bold text-gray-800">JOHN DOE</div>
+                      <div className="text-[8px] text-gray-600">Software Engineer</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-[8px] font-bold text-white bg-gray-600 px-1 py-0.5 rounded">EXPERIENCE</div>
+                      <div className="text-[8px] text-gray-600 pl-1">• Senior Developer at Tech Corp</div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Fallback for other templates */}
+                {template.id !== "resumake-classic" && template.id !== "resumake-classic-single" && (
+                  <div className="h-full bg-muted rounded border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground text-center px-2">
+                      {template.preview}
+                    </span>
+                  </div>
+                )}
               </div>
               
               <div className="flex items-center justify-between">

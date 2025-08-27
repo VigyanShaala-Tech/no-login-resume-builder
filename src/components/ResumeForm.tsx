@@ -309,7 +309,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
             />
           </div>
           <div>
-                          <Label htmlFor="email">Email (Enter your registered Email Id if you have one)</Label>
+                          <Label htmlFor="email">Email (Registered Id if you have)</Label>
             <Input
               id="email"
               type="email"
