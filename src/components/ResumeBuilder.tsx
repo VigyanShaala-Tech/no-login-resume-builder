@@ -7,7 +7,7 @@ import { Download, FileText, User, Briefcase, GraduationCap, Star, Loader2 } fro
 import { ResumeForm } from "./ResumeForm";
 import { ResumePreview } from "./ResumePreview";
 import { TemplateSelector } from "./TemplateSelector";
-import { generatePDF } from "@/utils/pdfGenerator";
+import { generatePDF, generateWord } from "@/utils/pdfGenerator";
 import { storeResumeData } from "@/utils/resumeStorage";
 
 export interface ResumeData {
@@ -39,6 +39,7 @@ export interface ResumeData {
     location: string;
     startDate: string;
     endDate: string;
+    current?: boolean;
     gpa?: string;
   }>;
   skills: Array<{
@@ -105,11 +106,44 @@ const initialResumeData: ResumeData = {
   publications: [],
 };
 
+function validateResumeData(data: ResumeData): { valid: boolean; message?: string } {
+  const p = data.personalInfo;
+  if (!p.fullName?.trim()) return { valid: false, message: "Please add your name before downloading." };
+  if (!p.email?.trim()) return { valid: false, message: "Please add your email address before downloading." };
+  if (!p.phone?.trim()) return { valid: false, message: "Please add your phone number before downloading." };
+  if (!p.location?.trim()) return { valid: false, message: "Please add your location before downloading." };
+  for (let i = 0; i < data.education.length; i++) {
+    const edu = data.education[i];
+    if (!edu.school?.trim()) return { valid: false, message: `Education ${i + 1}: School/University is required.` };
+    if (!edu.degree?.trim()) return { valid: false, message: `Education ${i + 1}: Degree is required.` };
+    if (!edu.field?.trim()) return { valid: false, message: `Education ${i + 1}: Field of study is required.` };
+    if (!edu.location?.trim()) return { valid: false, message: `Education ${i + 1}: Location is required.` };
+    if (!edu.startDate) return { valid: false, message: `Education ${i + 1}: Start date is required.` };
+    if (!edu.current && !edu.endDate) return { valid: false, message: `Education ${i + 1}: End date is required (or mark as ongoing).` };
+  }
+  for (let i = 0; i < data.experience.length; i++) {
+    const exp = data.experience[i];
+    if (!exp.company?.trim()) return { valid: false, message: `Experience ${i + 1}: Company is required.` };
+    if (!exp.position?.trim()) return { valid: false, message: `Experience ${i + 1}: Position is required.` };
+    if (!exp.location?.trim()) return { valid: false, message: `Experience ${i + 1}: Location is required.` };
+    if (!exp.startDate) return { valid: false, message: `Experience ${i + 1}: Start date is required.` };
+  }
+  const certs = data.certifications ?? [];
+  for (let i = 0; i < certs.length; i++) {
+    const cert = certs[i];
+    if (!cert.name?.trim()) return { valid: false, message: `Certification ${i + 1}: Name is required.` };
+    if (!cert.issuer?.trim()) return { valid: false, message: `Certification ${i + 1}: Issuer is required.` };
+    if (!cert.date) return { valid: false, message: `Certification ${i + 1}: Issue date is required.` };
+  }
+  return { valid: true };
+}
+
 export const ResumeBuilder = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
   const [selectedTemplate, setSelectedTemplate] = useState("resumake-classic");
   const [activeSection, setActiveSection] = useState("personal");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isGeneratingWord, setIsGeneratingWord] = useState(false);
   const { toast } = useToast();
 
   const sections = [
@@ -125,24 +159,15 @@ export const ResumeBuilder = () => {
   ];
 
   const handleDownload = async () => {
-    if (!resumeData.personalInfo.fullName) {
+    const validation = validateResumeData(resumeData);
+    if (!validation.valid) {
       toast({
         title: "Missing Information",
-        description: "Please add your name before downloading your resume.",
+        description: validation.message,
         variant: "destructive",
       });
       return;
     }
-
-    if (!resumeData.personalInfo.email) {
-      toast({
-        title: "Missing Information",
-        description: "Please add your email address before downloading your resume.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsGeneratingPDF(true);
     try {
       const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
@@ -176,6 +201,35 @@ export const ResumeBuilder = () => {
     }
   };
 
+  const handleDownloadWord = async () => {
+    const validation = validateResumeData(resumeData);
+    if (!validation.valid) {
+      toast({
+        title: "Missing Information",
+        description: validation.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsGeneratingWord(true);
+    try {
+      const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume.docx`;
+      await generateWord("resume-preview", filename);
+      toast({
+        title: "Download complete",
+        description: "Your resume has been downloaded as a Word document.",
+      });
+    } catch {
+      toast({
+        title: "Download Failed",
+        description: "There was an error generating the Word document. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWord(false);
+    }
+  };
+
   return (
     <div 
       className="min-h-screen bg-background"
@@ -199,12 +253,13 @@ export const ResumeBuilder = () => {
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
             <Button 
               onClick={handleDownload} 
               size="sm" 
               variant="secondary"
               className="flex items-center space-x-2"
-              disabled={isGeneratingPDF}
+              disabled={isGeneratingPDF || isGeneratingWord}
             >
               {isGeneratingPDF ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -213,6 +268,21 @@ export const ResumeBuilder = () => {
               )}
               <span>{isGeneratingPDF ? "Generating..." : "Download PDF"}</span>
             </Button>
+            <Button 
+              onClick={handleDownloadWord} 
+              size="sm" 
+              variant="secondary"
+              className="flex items-center space-x-2"
+              disabled={isGeneratingPDF || isGeneratingWord}
+            >
+              {isGeneratingWord ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4" />
+              )}
+              <span>{isGeneratingWord ? "Generating..." : "Download Word"}</span>
+            </Button>
+          </div>
           </div>
         </div>
       </header>

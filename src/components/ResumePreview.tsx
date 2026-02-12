@@ -18,12 +18,6 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     });
   };
 
-  // Function to strip HTML tags for clean display in templates
-  const stripHtml = (html: string) => {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
-  };
-
   const renderModernTemplate = () => (
     <div className="bg-white p-8 min-h-[11in] text-gray-900 text-sm leading-relaxed">
       {/* Header */}
@@ -147,7 +141,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      <span>{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</span>
+                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
                     </div>
                   </div>
                 </div>
@@ -405,7 +399,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {edu.gpa && <p className="text-gray-600">GPA: {edu.gpa}</p>}
                   </div>
                   <span className="text-gray-600">
-                    {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                    {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
                   </span>
                 </div>
               </div>
@@ -649,7 +643,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   <div>
                     <h3 className="font-medium text-gray-900">{edu.degree} in {edu.field}</h3>
                     <span className="text-gray-600 text-sm">
-                      {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                      {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
                     </span>
                   </div>
                   <div className="text-gray-600">
@@ -872,20 +866,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-4 mt-2 text-blue-600 text-sm">
-              {resumeData.personalInfo.website && (
-                <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
-                  <span>{resumeData.personalInfo.website}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.linkedin && (
+            {resumeData.personalInfo.linkedin && (
+              <div className="flex items-center gap-4 mt-2 text-blue-600 text-sm">
                 <div className="flex items-center gap-2">
                   <Linkedin className="w-4 h-4" />
                   <span>{resumeData.personalInfo.linkedin}</span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -955,7 +943,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      <span>{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</span>
+                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
                     </div>
                   </div>
                 </div>
@@ -1246,7 +1234,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      <span>{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</span>
+                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
                     </div>
                   </div>
                 </div>
@@ -1445,20 +1433,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-4 mt-2 text-gray-200 text-sm">
-              {resumeData.personalInfo.website && (
-                <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
-                  <span>{resumeData.personalInfo.website}</span>
-                </div>
-              )}
-              {resumeData.personalInfo.linkedin && (
+            {resumeData.personalInfo.linkedin && (
+              <div className="flex items-center gap-4 mt-2 text-gray-200 text-sm">
                 <div className="flex items-center gap-2">
                   <Linkedin className="w-4 h-4" />
                   <span>{resumeData.personalInfo.linkedin}</span>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           {resumeData.personalInfo.photo && (
             <div className="ml-6">
@@ -1537,7 +1519,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   <div className="text-right text-gray-600">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</span>
+                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
                     </div>
                   </div>
                 </div>
@@ -1803,7 +1785,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <p className="resumake-classic-position">{edu.degree} in {edu.field}{edu.gpa && ` • GPA: ${edu.gpa}`}</p>
                   </div>
                   <div className="resumake-classic-date">
-                    {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                    {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
                   </div>
                 </div>
               </div>
@@ -1877,7 +1859,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <h3 className="resumake-classic-institution">{achievement.title}</h3>
                   </div>
                   {achievement.date && (
-                    <div className="resumake-classic-date">{achievement.date}</div>
+                    <div className="resumake-classic-date">{formatDate(achievement.date)}</div>
                   )}
                 </div>
                 {achievement.description && (
@@ -1907,7 +1889,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {award.issuer && <p className="resumake-classic-position">{award.issuer}</p>}
                   </div>
                   {award.date && (
-                    <div className="resumake-classic-date">{award.date}</div>
+                    <div className="resumake-classic-date">{formatDate(award.date)}</div>
                   )}
                 </div>
                 {award.description && (
@@ -1937,7 +1919,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.issuer && <p className="resumake-classic-position">{cert.issuer}</p>}
                   </div>
                   {cert.date && (
-                    <div className="resumake-classic-date">{cert.date}</div>
+                    <div className="resumake-classic-date">{formatDate(cert.date)}</div>
                   )}
                 </div>
                 {cert.credentialId && (
@@ -2090,7 +2072,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Projects */}
-      {resumeData.projects.length > 0 && (
+      {resumeData.projects?.length > 0 && (
         <section className="mb-4">
           <h2 className="academic-shaded-header">
             Projects
@@ -2147,7 +2129,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     </p>
                   </div>
                   <div className="text-right text-sm text-black">
-                    <div>{formatDate(edu.startDate)} | {edu.endDate ? formatDate(edu.endDate) : "Present"}</div>
+                    <div>{formatDate(edu.startDate)} | {edu.current ? "Present" : formatDate(edu.endDate)}</div>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,7 @@ export const RichTextEditor = ({
   height = "200px", // Increased default height
 }: RichTextEditorProps) => {
   const [isMobile, setIsMobile] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -30,6 +31,14 @@ export const RichTextEditor = ({
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Enable spellcheck and grammar (browser-native) on the Quill editor
+  useEffect(() => {
+    const container = editorRef.current;
+    if (!container) return;
+    const el = container.querySelector('.ql-editor') as HTMLElement | null;
+    if (el) el.setAttribute('spellcheck', 'true');
+  }, [value]);
 
   // Double the height for mobile devices
   const mobileHeight = isMobile ? `calc(${height} * 2)` : height;
@@ -55,7 +64,7 @@ export const RichTextEditor = ({
   ];
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" ref={editorRef}>
       <Label>{label}</Label>
       <div className="border rounded-md overflow-hidden">
         <ReactQuill

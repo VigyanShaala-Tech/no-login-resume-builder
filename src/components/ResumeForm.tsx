@@ -85,6 +85,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
       location: "",
       startDate: "",
       endDate: "",
+      current: false,
       gpa: ""
     };
     setResumeData({
@@ -93,11 +94,11 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
     });
   };
 
-  const updateEducation = (id: string, field: string, value: string) => {
+  const updateEducation = (id: string, field: string, value: string | boolean) => {
     setResumeData({
       ...resumeData,
       education: resumeData.education.map(edu =>
-        edu.id === id ? { ...edu, [field]: value } : edu
+        edu.id === id ? { ...edu, [field]: field === "current" ? Boolean(value) : value } : edu
       )
     });
   };
@@ -575,9 +576,20 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                   type="date"
                   value={edu.endDate}
                   onChange={(e) => updateEducation(edu.id, "endDate", e.target.value)}
+                  disabled={edu.current}
                 />
               </div>
-                             <div>
+              <div className="flex items-center space-x-2 md:col-span-2">
+                <Checkbox
+                  id={`edu-current-${edu.id}`}
+                  checked={Boolean(edu.current)}
+                  onCheckedChange={(checked) => updateEducation(edu.id, "current", checked === true)}
+                />
+                <Label htmlFor={`edu-current-${edu.id}`} className="text-sm font-normal cursor-pointer">
+                  Currently studying here / Ongoing
+                </Label>
+              </div>
+              <div>
                  <Label>Write your GPA or Percentage (Optional)</Label>
                 <Input
                   value={edu.gpa}
