@@ -214,7 +214,7 @@ export const ResumeBuilder = () => {
     setIsGeneratingWord(true);
     try {
       const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume.docx`;
-      await generateWord("resume-preview", filename);
+      await generateWord(resumeData, selectedTemplate, filename);
       toast({
         title: "Download complete",
         description: "Your resume has been downloaded as a Word document.",

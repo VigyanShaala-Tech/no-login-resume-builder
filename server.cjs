@@ -6,8 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const { chromium } = require('playwright');
 const path = require('path');
-const htmlToDocx = require('html-to-docx');
-const HTMLtoDOCX = typeof htmlToDocx === 'function' ? htmlToDocx : (htmlToDocx && htmlToDocx.default) || htmlToDocx;
+const { buildDocx } = require('./buildResumeDocx.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -130,21 +129,15 @@ app.post('/api/generate-pdf', async (req, res) => {
   }
 });
 
-// Word document generation
+// Word document generation (Option 2: docx from data, preserves format)
 app.post('/api/generate-docx', async (req, res) => {
   try {
-    const { html } = req.body;
-    if (!html) {
-      return res.status(400).json({ error: 'HTML content is required' });
+    const { resumeData, template } = req.body;
+    if (!resumeData) {
+      return res.status(400).json({ error: 'resumeData is required' });
     }
-    // Extract body content for docx (library expects document content, not full page)
-    const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-    const contentHtml = bodyMatch ? bodyMatch[1] : html;
-    const docxBuffer = await HTMLtoDOCX(contentHtml, null, {
-      table: { row: { cantSplit: false } },
-      font: 'Calibri',
-      fontSize: 22,
-    });
+    const templateId = template || 'resumake-classic';
+    const docxBuffer = await buildDocx(resumeData, templateId);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', 'attachment; filename=resume.docx');
     res.send(Buffer.from(docxBuffer));

@@ -1,7 +1,6 @@
 // import jsPDF from 'jspdf'; // Commented out - backup
 // import html2canvas from 'html2canvas'; // Commented out - backup
-
-
+import type { ResumeData } from "@/components/ResumeBuilder";
 
 // Function to slice canvas into page-sized pieces
 // function sliceCanvas(canvas: HTMLCanvasElement, startYPx: number, endYPx: number): HTMLCanvasElement {
@@ -100,18 +99,21 @@ export const generatePDF = async (elementId: string, filename: string = 'resume.
   }
 };
 
-export const generateWord = async (elementId: string, filename: string = 'resume.docx') => {
+export const generateWord = async (
+  resumeData: ResumeData,
+  template: string,
+  filename: string = "resume.docx"
+) => {
   try {
-    const html = getResumeHtml(elementId);
-    const response = await fetch('/api/generate-docx', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ html }),
+    const response = await fetch("/api/generate-docx", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resumeData, template }),
     });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -120,7 +122,7 @@ export const generateWord = async (elementId: string, filename: string = 'resume
     URL.revokeObjectURL(url);
     return true;
   } catch (error) {
-    console.error('Error generating Word document:', error);
+    console.error("Error generating Word document:", error);
     throw error;
   }
 };
