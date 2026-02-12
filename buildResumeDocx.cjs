@@ -18,6 +18,11 @@ const SP = {
   shadedAfter: 100,    // academic-shaded-header margin-bottom 0.5rem
 };
 
+// PDF font sizes (docx half-points): 2.5rem~30pt=60, 1.125rem~13.5pt=27, 0.875rem~10.5pt=21, 0.75rem=9pt=18, 1rem~12pt=24
+const SZ = { nameClassic: 60, section: 27, body: 21, skillLevel: 18, nameSingle: 24 };
+const C = { dark: "333333", med: "374151", light: "6b7280" };  // PDF #333, #374151, #6b7280
+const FONT = { georgia: "Georgia", times: "Times New Roman" };
+
 function stripHtml(html) {
   if (!html || typeof html !== "string") return "";
   return html
@@ -36,11 +41,11 @@ function formatDate(dateString) {
 function sectionHeadingWithLine(text) {
   return [
     new Paragraph({
-      children: [new TextRun({ text, bold: true, size: 22 })],
+      children: [new TextRun({ text, bold: true, size: SZ.section, color: C.dark })],
       spacing: { before: SP.sectionBefore, after: SP.headingAfter },
     }),
     new Paragraph({
-      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "333333" } },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: C.dark } },
       spacing: { after: SP.lineAfter },
     }),
   ];
@@ -48,7 +53,7 @@ function sectionHeadingWithLine(text) {
 
 function shadedSectionHeading(text) {
   return new Paragraph({
-    children: [new TextRun({ text, bold: true, size: 18 })],
+    children: [new TextRun({ text, bold: true, size: SZ.body, font: FONT.times })],
     shading: { fill: "F3F4F6" },
     border: {
       top: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
@@ -60,14 +65,16 @@ function shadedSectionHeading(text) {
   });
 }
 
-// PDF: .resumake-classic-skills-grid = 2 columns; .resumake-classic-skill-item = name (bold) + level (pill gray)
-function skillsTable(skills) {
+// PDF: .resumake-classic-skill-item = name (bold #333) + level (0.75rem #6b7280)
+function skillsTable(skills, useTimesFont) {
   if (!skills || skills.length === 0) return [];
   const half = Math.ceil(skills.length / 2);
   const left = skills.slice(0, half);
   const right = skills.slice(half);
   const maxRows = Math.max(left.length, right.length);
   const rowSpacing = { after: 40 };
+  const nameRun = (s) => new TextRun({ text: s.name, bold: true, size: SZ.body, color: C.dark, font: useTimesFont ? FONT.times : undefined });
+  const levelRun = (s) => new TextRun({ text: s.level || "", size: SZ.skillLevel, color: C.light, font: useTimesFont ? FONT.times : undefined });
   const rows = [];
   for (let i = 0; i < maxRows; i++) {
     const l = left[i];
@@ -78,7 +85,7 @@ function skillsTable(skills) {
           new TableCell({
             children: [
               new Paragraph({
-                children: l ? [new TextRun({ text: l.name, bold: true }), new TextRun({ text: "\t" }), new TextRun({ text: l.level || "", size: 18, color: "6b7280" })] : [new TextRun({ text: "" })],
+                children: l ? [nameRun(l), new TextRun({ text: "\t" }), levelRun(l)] : [new TextRun({ text: "" })],
                 spacing: rowSpacing,
               }),
             ],
@@ -86,7 +93,7 @@ function skillsTable(skills) {
           new TableCell({
             children: [
               new Paragraph({
-                children: r ? [new TextRun({ text: r.name, bold: true }), new TextRun({ text: "\t" }), new TextRun({ text: r.level || "", size: 18, color: "6b7280" })] : [new TextRun({ text: "" })],
+                children: r ? [nameRun(r), new TextRun({ text: "\t" }), levelRun(r)] : [new TextRun({ text: "" })],
                 spacing: rowSpacing,
               }),
             ],
@@ -110,7 +117,7 @@ function buildResumakeClassic(data) {
 
   children.push(
     new Paragraph({
-      children: [new TextRun({ text: p.fullName || "Your Name", size: 32 })],
+      children: [new TextRun({ text: p.fullName || "Your Name", size: SZ.nameClassic, font: FONT.georgia, color: C.dark })],
       alignment: AlignmentType.CENTER,
       spacing: { after: SP.nameAfter },
     })
@@ -119,7 +126,7 @@ function buildResumakeClassic(data) {
   if (contactParts.length) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: contactParts.join(" - "), size: 20 })],
+        children: [new TextRun({ text: contactParts.join(" - "), size: SZ.body, color: C.med })],
         alignment: AlignmentType.CENTER,
         spacing: { after: SP.contactAfter },
       })
@@ -130,7 +137,8 @@ function buildResumakeClassic(data) {
     children.push(...sectionHeadingWithLine("Professional Summary"));
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: stripHtml(p.summary), size: 22 })],
+        children: [new TextRun({ text: stripHtml(p.summary), size: SZ.body, color: C.med })],
+        alignment: AlignmentType.JUSTIFIED,
         spacing: { after: SP.blockAfter },
       })
     );
@@ -143,20 +151,21 @@ function buildResumakeClassic(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `${exp.company}${exp.location ? ", " + exp.location : ""}`, bold: true }),
-            new TextRun({ text: `\t${dateStr}` }),
+            new TextRun({ text: `${exp.company}${exp.location ? ", " + exp.location : ""}`, bold: true, size: SZ.body, color: C.dark }),
+            new TextRun({ text: `\t${dateStr}`, size: SZ.body, color: C.light }),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
-          children: [new TextRun({ text: exp.position, italics: true })],
+          children: [new TextRun({ text: exp.position, italics: true, size: SZ.body, color: C.med })],
           spacing: { after: SP.itemAfter },
         })
       );
       if (exp.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(exp.description), size: 22 })],
+            children: [new TextRun({ text: stripHtml(exp.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -171,8 +180,8 @@ function buildResumakeClassic(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `${edu.school}${edu.location ? ", " + edu.location : ""}`, bold: true }),
-            new TextRun({ text: `\t${dateStr}` }),
+            new TextRun({ text: `${edu.school}${edu.location ? ", " + edu.location : ""}`, bold: true, size: SZ.body, color: C.dark }),
+            new TextRun({ text: `\t${dateStr}`, size: SZ.body, color: C.light }),
           ],
           spacing: { after: 40 },
         }),
@@ -181,6 +190,8 @@ function buildResumakeClassic(data) {
             new TextRun({
               text: `${edu.degree} in ${edu.field}${edu.gpa ? " • GPA: " + edu.gpa : ""}`,
               italics: true,
+              size: SZ.body,
+              color: C.med,
             }),
           ],
           spacing: { after: SP.blockAfter },
@@ -191,7 +202,7 @@ function buildResumakeClassic(data) {
 
   if (data.skills && data.skills.length > 0) {
     children.push(...sectionHeadingWithLine("Skills"));
-    children.push(...skillsTable(data.skills));
+    children.push(...skillsTable(data.skills, false));
     children.push(new Paragraph({ text: "", spacing: { after: SP.blockAfter } }));
   }
 
@@ -201,8 +212,8 @@ function buildResumakeClassic(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: proj.name, bold: true }),
-            ...(proj.date ? [new TextRun({ text: `\t${formatDate(proj.date)}` })] : []),
+            new TextRun({ text: proj.name, bold: true, size: SZ.body, color: C.dark }),
+            ...(proj.date ? [new TextRun({ text: `\t${formatDate(proj.date)}`, size: SZ.body, color: C.light })] : []),
           ],
           spacing: { after: 40 },
         })
@@ -210,7 +221,7 @@ function buildResumakeClassic(data) {
       if (proj.technologies) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: proj.technologies, italics: true })],
+            children: [new TextRun({ text: proj.technologies, italics: true, size: SZ.body, color: C.med })],
             spacing: { after: SP.itemAfter },
           })
         );
@@ -218,7 +229,8 @@ function buildResumakeClassic(data) {
       if (proj.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(proj.description), size: 22 })],
+            children: [new TextRun({ text: stripHtml(proj.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -232,8 +244,8 @@ function buildResumakeClassic(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: a.title, bold: true }),
-            ...(a.date ? [new TextRun({ text: `\t${formatDate(a.date)}` })] : []),
+            new TextRun({ text: a.title, bold: true, size: SZ.body, color: C.dark }),
+            ...(a.date ? [new TextRun({ text: `\t${formatDate(a.date)}`, size: SZ.body, color: C.light })] : []),
           ],
           spacing: { after: SP.itemAfter },
         })
@@ -241,7 +253,8 @@ function buildResumakeClassic(data) {
       if (a.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: 22 })],
+            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -255,20 +268,21 @@ function buildResumakeClassic(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: a.title, bold: true }),
-            new TextRun({ text: `\t${formatDate(a.date)}` }),
+            new TextRun({ text: a.title, bold: true, size: SZ.body, color: C.dark }),
+            new TextRun({ text: `\t${formatDate(a.date)}`, size: SZ.body, color: C.light }),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
-          children: [new TextRun({ text: a.issuer, italics: true })],
+          children: [new TextRun({ text: a.issuer, italics: true, size: SZ.body, color: C.med })],
           spacing: { after: SP.itemAfter },
         })
       );
       if (a.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: 22 })],
+            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -282,20 +296,20 @@ function buildResumakeClassic(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: c.name, bold: true }),
-            new TextRun({ text: `\t${formatDate(c.date)}` }),
+            new TextRun({ text: c.name, bold: true, size: SZ.body, color: C.dark }),
+            new TextRun({ text: `\t${formatDate(c.date)}`, size: SZ.body, color: C.light }),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
-          children: [new TextRun({ text: c.issuer, italics: true })],
+          children: [new TextRun({ text: c.issuer, italics: true, size: SZ.body, color: C.med })],
           spacing: { after: SP.itemAfter },
         })
       );
       if (c.credentialId) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: "Credential ID: " + c.credentialId, size: 20 })],
+            children: [new TextRun({ text: "Credential ID: " + c.credentialId, size: SZ.body, color: C.light })],
             spacing: { after: SP.blockAfter },
           })
         );
@@ -309,20 +323,20 @@ function buildResumakeClassic(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: pub.title, bold: true }),
-            new TextRun({ text: `\t${formatDate(pub.date)}` }),
+            new TextRun({ text: pub.title, bold: true, size: SZ.body, color: C.dark }),
+            new TextRun({ text: `\t${formatDate(pub.date)}`, size: SZ.body, color: C.light }),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
-          children: [new TextRun({ text: pub.journal, italics: true })],
+          children: [new TextRun({ text: pub.journal, italics: true, size: SZ.body, color: C.med })],
           spacing: { after: SP.itemAfter },
         })
       );
       if (pub.authors) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: "Authors: " + pub.authors, size: 20 })],
+            children: [new TextRun({ text: "Authors: " + pub.authors, size: SZ.body, color: C.light })],
             spacing: { after: SP.blockAfter },
           })
         );
@@ -340,11 +354,12 @@ function buildResumakeClassicSingle(data) {
   const p = data.personalInfo;
 
   const contactParts = [p.email, p.phone, p.linkedin, p.location].filter(Boolean);
+  const tr = (opts) => ({ ...opts, font: FONT.times });
   children.push(
     new Paragraph({
       children: [
-        new TextRun({ text: p.fullName || "Your Name", bold: true, size: 28 }),
-        new TextRun({ text: "\t\t\t" + (contactParts.join(" | ") || ""), size: 20 }),
+        new TextRun(tr({ text: p.fullName || "Your Name", bold: true, size: SZ.nameSingle })),
+        new TextRun(tr({ text: "\t\t\t" + (contactParts.join(" | ") || ""), size: SZ.body, color: C.med })),
       ],
       spacing: { after: SP.contactAfter },
     })
@@ -354,7 +369,8 @@ function buildResumakeClassicSingle(data) {
     children.push(shadedSectionHeading("Professional Summary"));
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: stripHtml(p.summary), size: 22 })],
+        children: [new TextRun(tr({ text: stripHtml(p.summary), size: SZ.body }))],
+        alignment: AlignmentType.JUSTIFIED,
         spacing: { after: SP.blockAfter },
       })
     );
@@ -367,20 +383,21 @@ function buildResumakeClassicSingle(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `${exp.company}${exp.location ? ", " + exp.location : ""}`, bold: true }),
-            new TextRun({ text: `\t${dateStr}` }),
+            new TextRun(tr({ text: `${exp.company}${exp.location ? ", " + exp.location : ""}`, bold: true, size: SZ.body })),
+            new TextRun(tr({ text: `\t${dateStr}`, size: SZ.body, color: C.light })),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
-          children: [new TextRun({ text: exp.position, bold: true })],
+          children: [new TextRun(tr({ text: exp.position, bold: true, size: SZ.body }))],
           spacing: { after: SP.itemAfter },
         })
       );
       if (exp.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(exp.description), size: 22 })],
+            children: [new TextRun(tr({ text: stripHtml(exp.description), size: SZ.body }))],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -390,7 +407,7 @@ function buildResumakeClassicSingle(data) {
 
   if (data.skills && data.skills.length > 0) {
     children.push(shadedSectionHeading("Skills"));
-    children.push(...skillsTable(data.skills));
+    children.push(...skillsTable(data.skills, true));
     children.push(new Paragraph({ text: "", spacing: { after: SP.blockAfter } }));
   }
 
@@ -400,8 +417,8 @@ function buildResumakeClassicSingle(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: proj.name, bold: true }),
-            ...(proj.date ? [new TextRun({ text: `\t${formatDate(proj.date)}` })] : []),
+            new TextRun(tr({ text: proj.name, bold: true, size: SZ.body })),
+            ...(proj.date ? [new TextRun(tr({ text: `\t${formatDate(proj.date)}`, size: SZ.body, color: C.light }))] : []),
           ],
           spacing: { after: SP.itemAfter },
         })
@@ -409,7 +426,8 @@ function buildResumakeClassicSingle(data) {
       if (proj.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(proj.description), size: 22 })],
+            children: [new TextRun(tr({ text: stripHtml(proj.description), size: SZ.body }))],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -417,7 +435,7 @@ function buildResumakeClassicSingle(data) {
       if (proj.technologies) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: "Skills: " + proj.technologies, size: 20 })],
+            children: [new TextRun(tr({ text: "Skills: " + proj.technologies, size: SZ.body }))],
             spacing: { after: SP.blockAfter },
           })
         );
@@ -432,17 +450,18 @@ function buildResumakeClassicSingle(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `${edu.school}${edu.location ? ", " + edu.location : ""}`, bold: true }),
-            new TextRun({ text: `\t${dateStr}` }),
+            new TextRun(tr({ text: `${edu.school}${edu.location ? ", " + edu.location : ""}`, bold: true, size: SZ.body })),
+            new TextRun(tr({ text: `\t${dateStr}`, size: SZ.body, color: C.light })),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
           children: [
-            new TextRun({
+            new TextRun(tr({
               text: `${edu.degree}${edu.field ? ", " + edu.field : ""}${edu.gpa ? ", GPA: " + edu.gpa : ""}`,
               italics: true,
-            }),
+              size: SZ.body,
+            })),
           ],
           spacing: { after: SP.blockAfter },
         })
@@ -456,8 +475,8 @@ function buildResumakeClassicSingle(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: a.title, bold: true }),
-            ...(a.date ? [new TextRun({ text: `\t${formatDate(a.date)}` })] : []),
+            new TextRun(tr({ text: a.title, bold: true, size: SZ.body })),
+            ...(a.date ? [new TextRun(tr({ text: `\t${formatDate(a.date)}`, size: SZ.body, color: C.light }))] : []),
           ],
           spacing: { after: SP.itemAfter },
         })
@@ -465,7 +484,8 @@ function buildResumakeClassicSingle(data) {
       if (a.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: 22 })],
+            children: [new TextRun(tr({ text: stripHtml(a.description), size: SZ.body }))],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -479,8 +499,8 @@ function buildResumakeClassicSingle(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: a.title, bold: true }),
-            new TextRun({ text: `\t${formatDate(a.date)}` }),
+            new TextRun(tr({ text: a.title, bold: true, size: SZ.body })),
+            new TextRun(tr({ text: `\t${formatDate(a.date)}`, size: SZ.body, color: C.light })),
           ],
           spacing: { after: 40 },
         })
@@ -488,7 +508,8 @@ function buildResumakeClassicSingle(data) {
       if (a.description) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: 22 })],
+            children: [new TextRun(tr({ text: stripHtml(a.description), size: SZ.body }))],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -502,20 +523,20 @@ function buildResumakeClassicSingle(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: c.name, bold: true }),
-            new TextRun({ text: `\t${formatDate(c.date)}` }),
+            new TextRun(tr({ text: c.name, bold: true, size: SZ.body })),
+            new TextRun(tr({ text: `\t${formatDate(c.date)}`, size: SZ.body, color: C.light })),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
-          children: [new TextRun({ text: c.issuer, italics: true })],
+          children: [new TextRun(tr({ text: c.issuer, italics: true, size: SZ.body }))],
           spacing: { after: SP.itemAfter },
         })
       );
       if (c.credentialId) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: "Credential ID: " + c.credentialId, size: 20 })],
+            children: [new TextRun(tr({ text: "Credential ID: " + c.credentialId, size: SZ.body, color: C.light }))],
             spacing: { after: SP.blockAfter },
           })
         );
@@ -529,20 +550,20 @@ function buildResumakeClassicSingle(data) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: pub.title, bold: true }),
-            new TextRun({ text: `\t${formatDate(pub.date)}` }),
+            new TextRun(tr({ text: pub.title, bold: true, size: SZ.body })),
+            new TextRun(tr({ text: `\t${formatDate(pub.date)}`, size: SZ.body, color: C.light })),
           ],
           spacing: { after: 40 },
         }),
         new Paragraph({
-          children: [new TextRun({ text: pub.journal, italics: true })],
+          children: [new TextRun(tr({ text: pub.journal, italics: true, size: SZ.body }))],
           spacing: { after: SP.itemAfter },
         })
       );
       if (pub.authors) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: "Authors: " + pub.authors, size: 20 })],
+            children: [new TextRun(tr({ text: "Authors: " + pub.authors, size: SZ.body, color: C.light }))],
             spacing: { after: SP.blockAfter },
           })
         );
