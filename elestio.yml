@@ -1,0 +1,36 @@
+config:
+  runTime: "NodeJs"
+  version: "20"
+  framework: "NoFramework"
+  installCommand: "npm install"
+  buildCommand: "npm run build && PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install chromium"
+  buildDir: "dist"
+  runCommand: "npm start"
+  isMonoRepoPackageInRoot: false
+
+environments:
+  - key: "NODE_ENV"
+    value: "production"
+  - key: "PORT"
+    value: "3000"
+  # Uncomment if using Supabase resume storage (must be set at build time):
+  - key: "VITE_SUPABASE_URL"
+    value: "https://your-project.supabase.co"
+  - key: "VITE_SUPABASE_ANON_KEY"
+    value: "your-anon-key"
+
+ports:
+  - protocol: "HTTPS"
+    targetProtocol: "HTTP"
+    listeningPort: "443"
+    targetPort: "3000"
+    targetIP: "172.17.0.1"
+    public: true
+    path: "/"
+    isAuth: false
+    login: ""
+    password: ""
+
+webUI:
+  - url: "https://[CI_CD_DOMAIN]"
+    label: "Resume Builder"
