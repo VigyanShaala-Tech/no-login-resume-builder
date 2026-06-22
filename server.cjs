@@ -1,12 +1,29 @@
-// Set Playwright environment variables for Render
-process.env.PLAYWRIGHT_BROWSERS_PATH = '0';
-process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = '1';
+process.env.PLAYWRIGHT_BROWSERS_PATH = process.env.PLAYWRIGHT_BROWSERS_PATH || '0';
+process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD || '1';
 
 const express = require('express');
 const cors = require('cors');
 const { chromium } = require('playwright');
 const path = require('path');
 const { buildDocx } = require('./buildResumeDocx.cjs');
+
+const BROWSER_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-gpu',
+];
+
+async function launchBrowser() {
+  try {
+    const executablePath = chromium.executablePath();
+    console.log('Using Playwright browser at:', executablePath);
+    return chromium.launch({ headless: true, args: BROWSER_ARGS, executablePath });
+  } catch (err) {
+    console.warn('Playwright default path failed, retrying without executablePath:', err.message);
+    return chromium.launch({ headless: true, args: BROWSER_ARGS });
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,46 +52,7 @@ app.post('/api/generate-pdf', async (req, res) => {
     console.log('HTML content length:', html.length);
     console.log('Starting Playwright...');
 
-    // Find browser path with fallback options
-    const fs = require('fs');
-    const path = require('path');
-
-    const findBrowserPath = () => {
-      // First, try the known working path (1E approach)
-      const knownPath = '/opt/render/project/.cache/playwright/chromium_headless_shell-1187/chrome-linux/headless_shell';
-      if (fs.existsSync(knownPath)) {
-        console.log('Found browser at known path:', knownPath);
-        return knownPath;
-      }
-      
-      // If not found, try multiple possible paths (1F approach)
-      const possiblePaths = [
-        '/opt/render/.cache/playwright/chromium_headless_shell-1187/chrome-linux/headless_shell',
-        path.join(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium_headless_shell-1187', 'chrome-linux', 'headless_shell')
-      ];
-      
-      for (const browserPath of possiblePaths) {
-        if (fs.existsSync(browserPath)) {
-          console.log('Found browser at:', browserPath);
-          return browserPath;
-        }
-      }
-      
-      console.log('Browser not found in any expected location, using default');
-      return undefined;
-    };
-
-    // Launch browser with Render-specific configuration
-    const browser = await chromium.launch({
-      executablePath: findBrowserPath(),
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
-    });
+    const browser = await launchBrowser();
 
     console.log('Browser launched');
 
@@ -83,8 +61,8 @@ app.post('/api/generate-pdf', async (req, res) => {
 
     console.log('Page created, setting content...');
 
-    // Set content
-    await page.setContent(html, { waitUntil: 'networkidle' });
+    await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForTimeout(1000);
 
     console.log('Content set, generating PDF...');
 

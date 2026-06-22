@@ -10,6 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server.cjs",
+    "postinstall": "PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install chromium || true",
+    "build:elestio": "npm run build && PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps chromium",
     "build:render": "npm run build && npx playwright install chromium && npm run start"
   },
   "dependencies": {
