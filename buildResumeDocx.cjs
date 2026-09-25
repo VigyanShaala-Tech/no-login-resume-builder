@@ -32,6 +32,17 @@ function stripHtml(html) {
     .trim();
 }
 
+function formatEducationScore(edu) {
+  const value = edu && edu.gpa ? String(edu.gpa).trim() : "";
+  if (!value) return "";
+  if (edu.scoreType === "percentage") {
+    const withPct = value.endsWith("%") ? value : value + "%";
+    return "Percentage: " + withPct;
+  }
+  const stripped = value.replace(/\/\s*10$/i, "").trim();
+  return "GPA: " + stripped + "/10";
+}
+
 function formatDate(dateString) {
   if (!dateString) return "";
   const d = new Date(dateString);
@@ -188,7 +199,7 @@ function buildResumakeClassic(data) {
         new Paragraph({
           children: [
             new TextRun({
-              text: `${edu.degree} in ${edu.field}${edu.gpa ? " • GPA: " + edu.gpa : ""}`,
+              text: `${edu.degree} in ${edu.field}${formatEducationScore(edu) ? " • " + formatEducationScore(edu) : ""}`,
               italics: true,
               size: SZ.body,
               color: C.med,
@@ -458,7 +469,7 @@ function buildResumakeClassicSingle(data) {
         new Paragraph({
           children: [
             new TextRun(tr({
-              text: `${edu.degree}${edu.field ? ", " + edu.field : ""}${edu.gpa ? ", GPA: " + edu.gpa : ""}`,
+              text: `${edu.degree}${edu.field ? ", " + edu.field : ""}${formatEducationScore(edu) ? ", " + formatEducationScore(edu) : ""}`,
               italics: true,
               size: SZ.body,
             })),

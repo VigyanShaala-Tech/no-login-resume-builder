@@ -9,6 +9,7 @@ import { Plus, Trash2, Upload, Image } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
 import { RichTextEditor } from "./RichTextEditor";
 import { useRef } from "react";
+import { todayIsoDate, toTitleCase } from "@/utils/resumeRules";
 
 interface ResumeFormProps {
   resumeData: ResumeData;
@@ -52,7 +53,8 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
       startDate: "",
       endDate: "",
       current: false,
-      description: ""
+      description: "",
+      experienceType: undefined,
     };
     setResumeData({
       ...resumeData,
@@ -86,7 +88,8 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
       startDate: "",
       endDate: "",
       current: false,
-      gpa: ""
+      gpa: "",
+      scoreType: undefined,
     };
     setResumeData({
       ...resumeData,
@@ -301,16 +304,18 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="fullName">Full Name</Label>
+            <Label htmlFor="fullName">Full Name *</Label>
             <Input
               id="fullName"
               value={resumeData.personalInfo.fullName}
               onChange={(e) => updatePersonalInfo("fullName", e.target.value)}
+              onBlur={() => updatePersonalInfo("fullName", toTitleCase(resumeData.personalInfo.fullName))}
               placeholder="John Doe"
             />
+            <p className="text-xs text-muted-foreground mt-1">Must be Title Case (e.g. John Doe).</p>
           </div>
           <div>
-                          <Label htmlFor="email">Email (Registered Id if you have)</Label>
+                          <Label htmlFor="email">Email (Registered Id if you have) *</Label>
             <Input
               id="email"
               type="email"
@@ -320,7 +325,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
             />
           </div>
           <div>
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">Phone *</Label>
             <Input
               id="phone"
               value={resumeData.personalInfo.phone}
@@ -329,7 +334,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
             />
           </div>
           <div>
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">Location *</Label>
             <Input
               id="location"
               value={resumeData.personalInfo.location}
@@ -338,7 +343,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
             />
           </div>
           <div>
-            <Label htmlFor="website">Website</Label>
+            <Label htmlFor="website">Website (Optional)</Label>
             <Input
               id="website"
               value={resumeData.personalInfo.website}
@@ -347,7 +352,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
             />
           </div>
           <div>
-            <Label htmlFor="linkedin">LinkedIn</Label>
+            <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
             <Input
               id="linkedin"
               value={resumeData.personalInfo.linkedin}
@@ -358,7 +363,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
         </div>
         <div>
           <RichTextEditor
-            label="Professional Summary"
+            label="Professional Summary *"
             value={resumeData.personalInfo.summary}
             onChange={(value) => updatePersonalInfo("summary", value)}
             placeholder="Brief professional summary highlighting your key achievements and skills..."
@@ -434,6 +439,26 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label>Experience type *</Label>
+                <Select
+                  value={exp.experienceType}
+                  onValueChange={(value) => updateExperience(exp.id, "experienceType", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Internship or Job" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="internship">Internship</SelectItem>
+                    <SelectItem value="job">Job</SelectItem>
+                  </SelectContent>
+                </Select>
+                {exp.experienceType === "job" && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Job dates cannot overlap with education dates.
+                  </p>
+                )}
+              </div>
               <div>
                 <Label>Company</Label>
                 <Input
@@ -470,6 +495,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                 <Label>Start Date</Label>
                 <Input
                   type="date"
+                  max={todayIsoDate()}
                   value={exp.startDate}
                   onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
                 />
@@ -479,6 +505,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                   <Label>End Date</Label>
                   <Input
                     type="date"
+                    max={todayIsoDate()}
                     value={exp.endDate}
                     onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
                   />
@@ -590,12 +617,36 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                 </Label>
               </div>
               <div>
-                 <Label>Write your GPA or Percentage (Optional)</Label>
+                <Label>Score type</Label>
+                <Select
+                  value={edu.scoreType}
+                  onValueChange={(value) => updateEducation(edu.id, "scoreType", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Percentage or GPA (out of 10)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="gpa">GPA (out of 10)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>
+                  {edu.scoreType === "percentage"
+                    ? "Percentage"
+                    : edu.scoreType === "gpa"
+                      ? "GPA (out of 10)"
+                      : "Score (optional)"}
+                </Label>
                 <Input
                   value={edu.gpa}
                   onChange={(e) => updateEducation(edu.id, "gpa", e.target.value)}
-                  placeholder="3.8/4.0"
+                  placeholder={edu.scoreType === "percentage" ? "85" : "8.5"}
                 />
+                {edu.scoreType === "gpa" && (
+                  <p className="text-xs text-muted-foreground mt-1">Must be a number from 0 to 10.</p>
+                )}
               </div>
             </div>
           </div>
@@ -613,7 +664,12 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
   const renderSkills = () => (
     <Card className="shadow-card">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Skills</CardTitle>
+        <div>
+          <CardTitle>Skills *</CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Write one skill in a box, mark its proficiency, then click Add Skill to add another. At least 2 skills are required.
+          </p>
+        </div>
         <Button onClick={addSkill} size="sm" className="flex items-center space-x-1">
           <Plus className="h-4 w-4" />
           <span>Add Skill</span>
@@ -657,7 +713,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
         ))}
         {resumeData.skills.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No skills added yet.</p>
+            <p>No skills added yet. Add at least 2 skills.</p>
             <p className="text-sm">Click "Add Skill" to get started.</p>
           </div>
         )}
@@ -822,7 +878,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Award Title</Label>
+                <Label>Award Title *</Label>
                 <Input
                   value={award.title}
                   onChange={(e) => updateAward(award.id, "title", e.target.value)}
@@ -830,7 +886,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                 />
               </div>
               <div>
-                <Label>Issuer/Organization</Label>
+                <Label>Issuer/Organization *</Label>
                 <Input
                   value={award.issuer}
                   onChange={(e) => updateAward(award.id, "issuer", e.target.value)}
@@ -838,7 +894,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                 />
               </div>
               <div>
-                <Label>Date</Label>
+                <Label>Date *</Label>
                 <Input
                   type="date"
                   value={award.date}
@@ -848,7 +904,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
             </div>
             <div>
               <RichTextEditor
-                label="Description (Optional)"
+                label="Description *"
                 value={award.description || ""}
                 onChange={(value) => updateAward(award.id, "description", value)}
                 placeholder="Describe the award and your achievement..."

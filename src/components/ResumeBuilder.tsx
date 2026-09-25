@@ -7,83 +7,16 @@ import { Download, FileText, User, Briefcase, GraduationCap, Star, Loader2 } fro
 import { ResumeForm } from "./ResumeForm";
 import { ResumePreview } from "./ResumePreview";
 import { TemplateSelector } from "./TemplateSelector";
+import { DownloadChecklistDialog } from "./DownloadChecklistDialog";
 import { generatePDF, generateWord } from "@/utils/pdfGenerator";
 import { storeResumeData } from "@/utils/resumeStorage";
+import {
+  applyTitleCaseName,
+  validateResumeData,
+  type ResumeData,
+} from "@/utils/resumeRules";
 
-export interface ResumeData {
-  personalInfo: {
-    fullName: string;
-    email: string;
-    phone: string;
-    location: string;
-    website?: string;
-    linkedin?: string;
-    summary: string;
-    photo?: string; // Base64 encoded image or URL
-  };
-  experience: Array<{
-    id: string;
-    company: string;
-    position: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    current: boolean;
-    description: string;
-  }>;
-  education: Array<{
-    id: string;
-    school: string;
-    degree: string;
-    field: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    current?: boolean;
-    gpa?: string;
-  }>;
-  skills: Array<{
-    id: string;
-    name: string;
-    level: string;
-  }>;
-  projects?: Array<{
-    id: string;
-    name: string;
-    description: string;
-    technologies: string;
-    date?: string;
-  }>;
-  achievements?: Array<{
-    id: string;
-    title: string;
-    description: string;
-    date?: string;
-  }>;
-  awards?: Array<{
-    id: string;
-    title: string;
-    issuer: string;
-    date: string;
-    description?: string;
-  }>;
-  certifications?: Array<{
-    id: string;
-    name: string;
-    issuer: string;
-    date: string;
-    expiryDate?: string;
-    credentialId?: string;
-  }>;
-  publications?: Array<{
-    id: string;
-    title: string;
-    journal: string;
-    date: string;
-    authors?: string;
-    link?: string;
-  }>;
-}
+export type { ResumeData };
 
 const initialResumeData: ResumeData = {
   personalInfo: {
@@ -98,7 +31,10 @@ const initialResumeData: ResumeData = {
   },
   experience: [],
   education: [],
-  skills: [],
+  skills: [
+    { id: "skill-1", name: "", level: "Intermediate" },
+    { id: "skill-2", name: "", level: "Intermediate" },
+  ],
   projects: [],
   achievements: [],
   awards: [],
@@ -106,44 +42,13 @@ const initialResumeData: ResumeData = {
   publications: [],
 };
 
-function validateResumeData(data: ResumeData): { valid: boolean; message?: string } {
-  const p = data.personalInfo;
-  if (!p.fullName?.trim()) return { valid: false, message: "Please add your name before downloading." };
-  if (!p.email?.trim()) return { valid: false, message: "Please add your email address before downloading." };
-  if (!p.phone?.trim()) return { valid: false, message: "Please add your phone number before downloading." };
-  if (!p.location?.trim()) return { valid: false, message: "Please add your location before downloading." };
-  for (let i = 0; i < data.education.length; i++) {
-    const edu = data.education[i];
-    if (!edu.school?.trim()) return { valid: false, message: `Education ${i + 1}: School/University is required.` };
-    if (!edu.degree?.trim()) return { valid: false, message: `Education ${i + 1}: Degree is required.` };
-    if (!edu.field?.trim()) return { valid: false, message: `Education ${i + 1}: Field of study is required.` };
-    if (!edu.location?.trim()) return { valid: false, message: `Education ${i + 1}: Location is required.` };
-    if (!edu.startDate) return { valid: false, message: `Education ${i + 1}: Start date is required.` };
-    if (!edu.current && !edu.endDate) return { valid: false, message: `Education ${i + 1}: End date is required (or mark as ongoing).` };
-  }
-  for (let i = 0; i < data.experience.length; i++) {
-    const exp = data.experience[i];
-    if (!exp.company?.trim()) return { valid: false, message: `Experience ${i + 1}: Company is required.` };
-    if (!exp.position?.trim()) return { valid: false, message: `Experience ${i + 1}: Position is required.` };
-    if (!exp.location?.trim()) return { valid: false, message: `Experience ${i + 1}: Location is required.` };
-    if (!exp.startDate) return { valid: false, message: `Experience ${i + 1}: Start date is required.` };
-  }
-  const certs = data.certifications ?? [];
-  for (let i = 0; i < certs.length; i++) {
-    const cert = certs[i];
-    if (!cert.name?.trim()) return { valid: false, message: `Certification ${i + 1}: Name is required.` };
-    if (!cert.issuer?.trim()) return { valid: false, message: `Certification ${i + 1}: Issuer is required.` };
-    if (!cert.date) return { valid: false, message: `Certification ${i + 1}: Issue date is required.` };
-  }
-  return { valid: true };
-}
-
 export const ResumeBuilder = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
   const [selectedTemplate, setSelectedTemplate] = useState("resumake-classic");
   const [activeSection, setActiveSection] = useState("personal");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
+  const [checklistOpen, setChecklistOpen] = useState(false);
   const { toast } = useToast();
 
   const sections = [
@@ -158,8 +63,26 @@ export const ResumeBuilder = () => {
     { id: "publications", label: "Publications", icon: FileText },
   ];
 
+  const openChecklist = () => {
+    const titled = applyTitleCaseName(resumeData);
+    if (titled.personalInfo.fullName !== resumeData.personalInfo.fullName) {
+      setResumeData(titled);
+    }
+    const validation = validateResumeData(titled);
+    if (!validation.valid) {
+      toast({
+        title: "Missing Information",
+        description: validation.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    setChecklistOpen(true);
+  };
+
   const handleDownload = async () => {
-    const validation = validateResumeData(resumeData);
+    const titled = applyTitleCaseName(resumeData);
+    const validation = validateResumeData(titled);
     if (!validation.valid) {
       toast({
         title: "Missing Information",
@@ -189,6 +112,7 @@ export const ResumeBuilder = () => {
       
       // Generate and download PDF
       await generatePDF('resume-preview', filename);
+      setChecklistOpen(false);
       
     } catch (error) {
       toast({
@@ -215,6 +139,7 @@ export const ResumeBuilder = () => {
     try {
       const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume.docx`;
       await generateWord(resumeData, selectedTemplate, filename);
+      setChecklistOpen(false);
       toast({
         title: "Download complete",
         description: "Your resume has been downloaded as a Word document.",
@@ -255,7 +180,7 @@ export const ResumeBuilder = () => {
             </div>
             <div className="flex items-center gap-2">
             <Button 
-              onClick={handleDownload} 
+              onClick={openChecklist} 
               size="sm" 
               variant="secondary"
               className="flex items-center space-x-2"
@@ -269,7 +194,7 @@ export const ResumeBuilder = () => {
               <span>{isGeneratingPDF ? "Generating..." : "Download PDF"}</span>
             </Button>
             <Button 
-              onClick={handleDownloadWord} 
+              onClick={openChecklist} 
               size="sm" 
               variant="secondary"
               className="flex items-center space-x-2"
@@ -358,6 +283,14 @@ export const ResumeBuilder = () => {
           </div>
         </div>
       </div>
+      <DownloadChecklistDialog
+        open={checklistOpen}
+        onOpenChange={setChecklistOpen}
+        onDownloadPdf={handleDownload}
+        onDownloadWord={handleDownloadWord}
+        isGeneratingPDF={isGeneratingPDF}
+        isGeneratingWord={isGeneratingWord}
+      />
     </div>
   );
 };

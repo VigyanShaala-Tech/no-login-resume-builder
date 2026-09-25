@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Mail, Phone, Globe, Linkedin, Calendar } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
+import { formatEducationScore } from "@/utils/resumeRules";
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -136,7 +137,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <h3 className="font-semibold text-gray-900">{edu.degree} in {edu.field}</h3>
                     <p className="text-gray-700 font-medium">{edu.school}</p>
                     {edu.location && <p className="text-gray-600 text-sm">{edu.location}</p>}
-                    {edu.gpa && <p className="text-gray-600 text-sm">GPA: {edu.gpa}</p>}
+                    {formatEducationScore(edu) && <p className="text-gray-600 text-sm">{formatEducationScore(edu)}</p>}
                   </div>
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -396,7 +397,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                   <div>
                     <h3 className="font-bold text-gray-900">{edu.degree} in {edu.field}</h3>
                     <p className="font-semibold text-gray-700">{edu.school}, {edu.location}</p>
-                    {edu.gpa && <p className="text-gray-600">GPA: {edu.gpa}</p>}
+                    {formatEducationScore(edu) && <p className="text-gray-600">{formatEducationScore(edu)}</p>}
                   </div>
                   <span className="text-gray-600">
                     {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
@@ -654,10 +655,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                         <span>{edu.location}</span>
                       </>
                     )}
-                    {edu.gpa && (
+                    {formatEducationScore(edu) && (
                       <>
                         <span className="mx-2">•</span>
-                        <span>GPA: {edu.gpa}</span>
+                        <span>{formatEducationScore(edu)}</span>
                       </>
                     )}
                   </div>
@@ -938,7 +939,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-semibold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="text-gray-700 font-medium">{edu.school}{edu.location && `, ${edu.location}`}{edu.gpa && ` • GPA: ${edu.gpa}`}</p>
+                    <p className="text-gray-700 font-medium">{edu.school}{edu.location && `, ${edu.location}`}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
                   </div>
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -1229,7 +1230,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-semibold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="text-gray-700 font-medium">{edu.school}{edu.location && `, ${edu.location}`}{edu.gpa && ` • GPA: ${edu.gpa}`}</p>
+                    <p className="text-gray-700 font-medium">{edu.school}{edu.location && `, ${edu.location}`}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
                   </div>
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -1514,7 +1515,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="text-gray-700 font-semibold">{edu.school}{edu.location && `, ${edu.location}`}{edu.gpa && ` • GPA: ${edu.gpa}`}</p>
+                    <p className="text-gray-700 font-semibold">{edu.school}{edu.location && `, ${edu.location}`}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
                   </div>
                   <div className="text-right text-gray-600">
                     <div className="flex items-center gap-1">
@@ -1782,7 +1783,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="resumake-classic-item-header">
                   <div>
                     <h3 className="resumake-classic-institution">{edu.school}{edu.location && `, ${edu.location}`}</h3>
-                    <p className="resumake-classic-position">{edu.degree} in {edu.field}{edu.gpa && ` • GPA: ${edu.gpa}`}</p>
+                    <p className="resumake-classic-position">{edu.degree} in {edu.field}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
                   </div>
                   <div className="resumake-classic-date">
                     {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
@@ -2125,7 +2126,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <p className="italic text-black mb-0">
                       {edu.degree}
                       {edu.field && `, ${edu.field}`}
-                      {edu.gpa && `, GPA: ${edu.gpa}`}
+                      {formatEducationScore(edu) && `, ${formatEducationScore(edu)}`}
                     </p>
                   </div>
                   <div className="text-right text-sm text-black">

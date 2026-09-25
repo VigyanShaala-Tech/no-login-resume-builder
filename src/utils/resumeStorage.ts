@@ -20,6 +20,7 @@ export interface ResumeData {
     endDate: string
     current: boolean
     description: string
+    experienceType?: "internship" | "job"
   }>
   education: Array<{
     id: string
@@ -29,7 +30,9 @@ export interface ResumeData {
     location: string
     startDate: string
     endDate: string
+    current?: boolean
     gpa?: string
+    scoreType?: "percentage" | "gpa"
   }>
   skills: Array<{
     id: string
