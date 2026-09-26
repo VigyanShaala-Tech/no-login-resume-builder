@@ -4,6 +4,7 @@ import {
   addEmptyAward,
   addExperience,
   completeChecklist,
+  downloadFromChecklist,
   expectToast,
   fillPersonalAndSkills,
   openDownloadChecklist,
@@ -87,4 +88,16 @@ test("checklist includes the Bachelor's 10th and 12th question", async ({ page }
   await expect(
     page.getByText("If you are pursuing a Bachelor's Degree, have you added your 10th and 12th Education Details?")
   ).toBeVisible();
+});
+
+test("smoke: Download PDF and Word produce files", async ({ page }) => {
+  test.setTimeout(120_000);
+  await fillPersonalAndSkills(page);
+  await openDownloadChecklist(page);
+  await completeChecklist(page);
+  await downloadFromChecklist(page, "pdf");
+
+  await openDownloadChecklist(page);
+  await completeChecklist(page);
+  await downloadFromChecklist(page, "word");
 });

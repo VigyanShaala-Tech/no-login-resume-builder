@@ -86,3 +86,15 @@ export async function completeChecklist(page: Page) {
 export async function expectToast(page: Page, text: string | RegExp) {
   await expect(page.getByText(text).first()).toBeVisible({ timeout: 8000 });
 }
+
+export async function downloadFromChecklist(page: Page, kind: "pdf" | "word") {
+  const testId = kind === "pdf" ? "checklist-download-pdf" : "checklist-download-word";
+  const ext = kind === "pdf" ? "pdf" : "docx";
+  const downloadPromise = page.waitForEvent("download", { timeout: 60_000 });
+  await page.getByTestId(testId).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(new RegExp(`Jane_Doe_Resume\\.${ext}$`, "i"));
+  const path = await download.path();
+  expect(path).toBeTruthy();
+  return download;
+}
