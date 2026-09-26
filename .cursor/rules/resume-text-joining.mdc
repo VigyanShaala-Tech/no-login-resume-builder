@@ -1,0 +1,19 @@
+---
+description: Shared resume text — join filled fields only; never invent commas, dashes, or "in"
+globs: src/components/ResumePreview.tsx,src/utils/resumeRules.ts,buildResumeDocx.cjs
+alwaysApply: true
+---
+
+# Resume text joining
+
+Gold standard: Classic (`resumake-classic`) plus `educationEntryLines`.
+
+- Contact, place, and dates must use helpers in `src/utils/resumeRules.ts`. Do not hand-write `if (nextField) print separator`.
+- Contact = filled items only. Classic separator ` - `. Shaded separator ` | `. Order: Classic email, phone, location, website, LinkedIn. Shaded email, phone, LinkedIn, location.
+- Place = `formatPlace(name, location)` (`School, City`). No trailing comma.
+- Dates = `formatDateRange` (`Mon YYYY - Mon YYYY`, ongoing = `Present`). Shaded experience may use ` | `.
+- Education: `educationEntryLines`. Never print `in`. Skip empty field and score.
+- Hide a section with no entries.
+- PDF copies the preview. Word is `buildResumeDocx.cjs` — CSS-only fixes do not update Word.
+
+Tests must cover: empty LinkedIn, empty field of study, empty score, location with no school.

@@ -32,6 +32,10 @@ function stripHtml(html) {
     .trim();
 }
 
+function joinFilled(parts, separator) {
+  return parts.map((part) => (part && String(part).trim()) || "").filter(Boolean).join(separator);
+}
+
 function formatEducationScore(edu) {
   const value = edu && edu.gpa ? String(edu.gpa).trim() : "";
   if (!value) return "";
@@ -167,11 +171,11 @@ function buildResumakeClassic(data) {
       spacing: { after: SP.nameAfter },
     })
   );
-  const contactParts = [p.email, p.phone, p.location, p.website, p.linkedin].filter(Boolean);
+  const contactParts = joinFilled([p.email, p.phone, p.location, p.website, p.linkedin], " - ");
   if (contactParts.length) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: contactParts.join(" - "), size: SZ.body, color: C.med })],
+        children: [new TextRun({ text: contactParts, size: SZ.body, color: C.med })],
         alignment: AlignmentType.CENTER,
         spacing: { after: SP.contactAfter },
       })
@@ -379,13 +383,13 @@ function buildResumakeClassicSingle(data) {
   const children = [];
   const p = data.personalInfo;
 
-  const contactParts = [p.email, p.phone, p.linkedin, p.location].filter(Boolean);
+  const contactParts = joinFilled([p.email, p.phone, p.linkedin, p.location], " | ");
   const tr = (opts) => ({ ...opts, font: FONT.times });
   children.push(
     new Paragraph({
       children: [
         new TextRun(tr({ text: p.fullName || "Your Name", bold: true, size: SZ.nameSingle })),
-        new TextRun(tr({ text: "\t\t\t" + (contactParts.join(" | ") || ""), size: SZ.body, color: C.med })),
+        new TextRun(tr({ text: "\t\t\t" + contactParts, size: SZ.body, color: C.med })),
       ],
       spacing: { after: SP.contactAfter },
     })

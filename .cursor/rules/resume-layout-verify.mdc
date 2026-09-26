@@ -1,0 +1,16 @@
+---
+description: Do not mark resume layout done without measuring the live preview
+globs: src/index.css,src/components/ResumePreview.tsx,src/components/TemplateSelector.tsx
+alwaysApply: true
+---
+
+# Resume layout verification
+
+Text bugs are not layout. Do not rewrite eight templates' CSS to fix a comma.
+
+- Space above the next section title must match Classic: about 16px from the last skill pill to the next heading. A ~2px gap is a fail.
+- Do not change `.resumake-classic-skills-grid` or `.resumake-classic-skill-level` to fix Shaded headers. That moves Classic.
+- Fix only that template's heading class (e.g. `.academic-shaded-header` margin-top).
+- Done only if: browser sample resume; contact line matches the joining helpers; skill-to-next-heading gap ≥ 12px; Classic gap did not shrink.
+- Production still shows only Classic and Shaded until a template passes this pass. Then unhide it in `TemplateSelector`.
+- One template per visual pass. Do not mix shared-text work with spacing CSS.

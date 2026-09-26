@@ -3,7 +3,10 @@ import {
   DOWNLOAD_CHECKLIST,
   applyTitleCaseName,
   educationEntryLines,
+  formatContactLine,
+  formatDateRange,
   formatEducationScore,
+  formatPlace,
   isChecklistComplete,
   isRichTextEmpty,
   isTitleCase,
@@ -135,6 +138,36 @@ describe("educationEntryLines", () => {
       field: "",
       score: "",
     });
+  });
+});
+
+describe("formatContactLine", () => {
+  const info = {
+    email: "vijayacads@gmail.com",
+    phone: "+917028422265",
+    location: "Pune India",
+    website: "",
+    linkedin: "",
+  };
+
+  it("keeps a separator between phone and location when LinkedIn is empty", () => {
+    expect(formatContactLine(info, "shaded")).toBe(
+      "vijayacads@gmail.com | +917028422265 | Pune India"
+    );
+    expect(formatContactLine(info, "classic")).toBe(
+      "vijayacads@gmail.com - +917028422265 - Pune India"
+    );
+  });
+});
+
+describe("formatPlace and formatDateRange", () => {
+  it("omits a missing location", () => {
+    expect(formatPlace("Univ of Pune", "")).toBe("Univ of Pune");
+    expect(formatPlace("", "Pune")).toBe("Pune");
+  });
+
+  it("uses Present when the role is current", () => {
+    expect(formatDateRange("2020-01-01", "", true)).toBe("Jan 2020 - Present");
   });
 });
 

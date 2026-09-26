@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Mail, Phone, Globe, Linkedin, Calendar } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
-import { educationEntryLines } from "@/utils/resumeRules";
+import { educationEntryLines, formatContactLine, formatDateRange, formatPlace, formatResumeDate } from "@/utils/resumeRules";
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -10,14 +10,7 @@ interface ResumePreviewProps {
 }
 
 export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      year: "numeric"
-    });
-  };
+  const formatDate = formatResumeDate;
 
   const renderEducationEntry = (
     edu: ResumeData["education"][number],
@@ -33,7 +26,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     }
   ) => {
     const lines = educationEntryLines(edu);
-    const dateText = `${formatDate(edu.startDate)}${options.dateSeparator}${edu.current ? "Present" : formatDate(edu.endDate)}`;
+    const dateText = formatDateRange(edu.startDate, edu.endDate, edu.current, options.dateSeparator);
     return (
       <>
         <div className="flex justify-between items-start gap-4">
@@ -144,7 +137,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-semibold text-gray-900">{exp.position}</h3>
-                    <p className="text-gray-700 font-medium">{exp.company}{exp.location && `, ${exp.location}`}</p>
+                    <p className="text-gray-700 font-medium">{formatPlace(exp.company, exp.location)}</p>
                   </div>
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -405,7 +398,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="mb-2">
                   <h3 className="font-bold text-gray-900">{exp.position}</h3>
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">{exp.company}{exp.location && `, ${exp.location}`}</span>
+                    <span className="font-semibold text-gray-700">{formatPlace(exp.company, exp.location)}</span>
                     <span className="text-gray-600">
                       {formatDate(exp.startDate)} - {exp.current ? "Present" : formatDate(exp.endDate)}
                     </span>
@@ -926,7 +919,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-semibold text-gray-900">{exp.position}</h3>
-                    <p className="text-gray-700 font-medium">{exp.company}{exp.location && `, ${exp.location}`}</p>
+                    <p className="text-gray-700 font-medium">{formatPlace(exp.company, exp.location)}</p>
                   </div>
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -1214,7 +1207,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-semibold text-gray-900">{exp.position}</h3>
-                    <p className="text-gray-700 font-medium">{exp.company}{exp.location && `, ${exp.location}`}</p>
+                    <p className="text-gray-700 font-medium">{formatPlace(exp.company, exp.location)}</p>
                   </div>
                   <div className="text-right text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -1496,7 +1489,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className="font-bold text-gray-900">{exp.position}</h3>
-                    <p className="text-gray-700 font-semibold">{exp.company}{exp.location && `, ${exp.location}`}</p>
+                    <p className="text-gray-700 font-semibold">{formatPlace(exp.company, exp.location)}</p>
                   </div>
                   <div className="text-right text-gray-600">
                     <div className="flex items-center gap-1">
@@ -1710,33 +1703,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           {resumeData.personalInfo.fullName || "Your Name"}
         </h1>
         <div className="resumake-classic-contact">
-          {resumeData.personalInfo.email && (
-            <span>{resumeData.personalInfo.email}</span>
-          )}
-          {resumeData.personalInfo.phone && (
-            <>
-              <span> - </span>
-              <span>{resumeData.personalInfo.phone}</span>
-            </>
-          )}
-          {resumeData.personalInfo.location && (
-            <>
-              <span> - </span>
-              <span>{resumeData.personalInfo.location}</span>
-            </>
-          )}
-          {resumeData.personalInfo.website && (
-            <>
-              <span> - </span>
-              <span>{resumeData.personalInfo.website}</span>
-            </>
-          )}
-          {resumeData.personalInfo.linkedin && (
-            <>
-              <span> - </span>
-              <span>{resumeData.personalInfo.linkedin}</span>
-            </>
-          )}
+          {formatContactLine(resumeData.personalInfo, "classic")}
         </div>
       </header>
 
@@ -1766,7 +1733,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
               <div key={exp.id} className="resumake-classic-item">
                 <div className="resumake-classic-item-header">
                   <div>
-                    <h3 className="resumake-classic-institution">{exp.company}{exp.location && `, ${exp.location}`}</h3>
+                    <h3 className="resumake-classic-institution">{formatPlace(exp.company, exp.location)}</h3>
                     <p className="resumake-classic-position">{exp.position}</p>
                   </div>
                   <div className="resumake-classic-date">
@@ -1992,12 +1959,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           </div>
           <div className="text-right text-black">
             <div className="text-right">
-              {[
-                resumeData.personalInfo.email,
-                resumeData.personalInfo.phone,
-                resumeData.personalInfo.linkedin,
-                resumeData.personalInfo.location,
-              ].filter(Boolean).join(" | ")}
+              {formatContactLine(resumeData.personalInfo, "shaded")}
             </div>
           </div>
         </div>
@@ -2030,13 +1992,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 <div className="flex justify-between items-start mb-0">
                   <div className="flex-1">
                     <h3 className="font-bold text-black">
-                      {exp.company}
-                      {exp.location && `, ${exp.location}`}
+                      {formatPlace(exp.company, exp.location)}
                     </h3>
                     <p className="font-bold text-black mb-0 ml-1">{exp.position}</p>
                   </div>
                   <div className="text-right text-sm text-black">
-                    <div>{formatDate(exp.startDate)} | {exp.endDate ? formatDate(exp.endDate) : "Present"}</div>
+                    <div>{formatDateRange(exp.startDate, exp.endDate, exp.current, " | ")}</div>
                   </div>
                 </div>
                 {exp.description && (

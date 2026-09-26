@@ -132,6 +132,47 @@ export function formatEducationScore(edu: { gpa?: string; scoreType?: ScoreType 
   return `GPA: ${stripped}/10`;
 }
 
+/** Join only non-empty trimmed parts. Never leave a dangling comma or dash. */
+export function joinFilled(parts: Array<string | undefined | null>, separator: string): string {
+  return parts.map((part) => part?.trim() ?? "").filter(Boolean).join(separator);
+}
+
+export function formatPlace(name?: string, location?: string): string {
+  return joinFilled([name, location], ", ");
+}
+
+export function formatResumeDate(dateString?: string): string {
+  if (!dateString?.trim()) return "";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+export function formatDateRange(
+  start?: string,
+  end?: string,
+  current?: boolean,
+  separator = " - "
+): string {
+  return joinFilled([formatResumeDate(start), current ? "Present" : formatResumeDate(end)], separator);
+}
+
+export function formatContactLine(
+  info: {
+    email?: string;
+    phone?: string;
+    location?: string;
+    website?: string;
+    linkedin?: string;
+  },
+  variant: "classic" | "shaded" = "classic"
+): string {
+  if (variant === "shaded") {
+    return joinFilled([info.email, info.phone, info.linkedin, info.location], " | ");
+  }
+  return joinFilled([info.email, info.phone, info.location, info.website, info.linkedin], " - ");
+}
+
 /** Degree and school share the headline. Field and score stay on the next line. Empty parts are omitted. */
 export function educationEntryLines(edu: {
   degree?: string;
@@ -141,10 +182,9 @@ export function educationEntryLines(edu: {
   gpa?: string;
   scoreType?: ScoreType;
 }): { degree: string; place: string; field: string; score: string } {
-  const place = [edu.school?.trim(), edu.location?.trim()].filter(Boolean).join(", ");
   return {
     degree: edu.degree?.trim() ?? "",
-    place,
+    place: formatPlace(edu.school, edu.location),
     field: edu.field?.trim() ?? "",
     score: formatEducationScore(edu),
   };
