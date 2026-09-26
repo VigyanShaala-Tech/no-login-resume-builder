@@ -1991,28 +1991,13 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             </h1>
           </div>
           <div className="text-right text-black">
-            <div className="flex items-center space-x-1 flex-wrap justify-end">
-              {resumeData.personalInfo.email && (
-                <>
-                  <span>{resumeData.personalInfo.email}</span>
-                  {resumeData.personalInfo.phone && <span>|</span>}
-                </>
-              )}
-              {resumeData.personalInfo.phone && (
-                <>
-                  <span>{resumeData.personalInfo.phone}</span>
-                  {resumeData.personalInfo.linkedin && <span>|</span>}
-                </>
-              )}
-              {resumeData.personalInfo.linkedin && (
-                <>
-                  <span>{resumeData.personalInfo.linkedin}</span>
-                  {resumeData.personalInfo.location && <span>|</span>}
-                </>
-              )}
-              {resumeData.personalInfo.location && (
-                <span>{resumeData.personalInfo.location}</span>
-              )}
+            <div className="text-right">
+              {[
+                resumeData.personalInfo.email,
+                resumeData.personalInfo.phone,
+                resumeData.personalInfo.linkedin,
+                resumeData.personalInfo.location,
+              ].filter(Boolean).join(" | ")}
             </div>
           </div>
         </div>

@@ -716,6 +716,7 @@ button[data-variant="outline"]:hover {
   background-color: #f3f4f6;
   color: black;
   padding: 0.1rem 0.5rem;
+  margin-top: 0.85rem;
   margin-bottom: 0.5rem;
   margin-left: -1rem;
   margin-right: -1rem;
