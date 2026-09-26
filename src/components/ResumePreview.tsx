@@ -11,6 +11,7 @@ interface ResumePreviewProps {
 
 export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
   const formatDate = formatResumeDate;
+  const namedSkills = resumeData.skills.filter((skill) => skill.name.trim());
 
   const renderEducationEntry = (
     edu: ResumeData["education"][number],
@@ -185,13 +186,13 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
+      {namedSkills.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-1 border-b-2 border-blue-600">
             Skills
           </h2>
           <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <div key={skill.id} className="flex justify-between items-center">
                 <span className="text-gray-700">{skill.name}</span>
                 <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
@@ -440,13 +441,13 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
+      {namedSkills.length > 0 && (
         <section className="mb-8">
           <h2 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wide">
             Skills
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <div key={skill.id} className="flex justify-between">
                 <span className="text-gray-700">{skill.name}</span>
                 <span className="text-gray-600">({skill.level})</span>
@@ -685,16 +686,16 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
+      {namedSkills.length > 0 && (
         <section className="mb-0">
           <h2 className="minimal-section-header">
             Skills
           </h2>
           <div className="flex flex-wrap gap-2">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <span key={skill.id} className="text-gray-700">
                 {skill.name}
-                {skill.id !== resumeData.skills[resumeData.skills.length - 1].id && ","}
+                {skill.id !== namedSkills[namedSkills.length - 1].id && ","}
               </span>
             ))}
           </div>
@@ -967,13 +968,13 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
-        <section className="mb-0">
+      {namedSkills.length > 0 && (
+        <section className="mb-0 pb-3">
           <h2 className="professional-section-header">
             Core Competencies
           </h2>
           <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <div key={skill.id} className="flex justify-between items-center">
                 <span className="text-gray-700">{skill.name}</span>
                 <span className="text-sm text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">
@@ -1255,13 +1256,13 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
+      {namedSkills.length > 0 && (
         <section className="mb-0">
           <h2 className="creative-section-header">
             Skills & Expertise
           </h2>
           <div className="flex flex-wrap gap-2">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <span key={skill.id} className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
                 {skill.name} ({skill.level})
               </span>
@@ -1538,13 +1539,13 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
+      {namedSkills.length > 0 && (
         <section className="mb-0">
           <h2 className="executive-section-header">
             Core Competencies
           </h2>
           <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <div key={skill.id} className="flex justify-between items-center">
                 <span className="text-gray-700 font-medium">{skill.name}</span>
                 <span className="text-sm text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full">
@@ -1776,14 +1777,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
+      {namedSkills.length > 0 && (
         <section className="mb-0 skills-section">
           <h2 className="resumake-classic-section-header">
             Skills
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
           <div className="resumake-classic-skills-grid ml-2">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <div key={skill.id} className="resumake-classic-skill-item">
                 <span className="resumake-classic-institution">{skill.name}</span>
                 <span className="resumake-classic-skill-level">{skill.level}</span>
@@ -2015,13 +2016,13 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       )}
 
       {/* Skills */}
-      {resumeData.skills.length > 0 && (
+      {namedSkills.length > 0 && (
         <section className="mb-0 skills-section">
           <h2 className="academic-shaded-header">
             Skills
           </h2>
           <div className="resumake-classic-skills-grid ml-2">
-            {resumeData.skills.map((skill) => (
+            {namedSkills.map((skill) => (
               <div key={skill.id} className="resumake-classic-skill-item">
                 <span className="resumake-classic-institution">{skill.name}</span>
                 <span className="resumake-classic-skill-level">{skill.level}</span>

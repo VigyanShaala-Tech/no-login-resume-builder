@@ -114,6 +114,10 @@ function shadedSectionHeading(text) {
   });
 }
 
+function namedSkills(skills) {
+  return (skills || []).filter((skill) => skill && String(skill.name || "").trim());
+}
+
 // PDF: .resumake-classic-skill-item = name (bold #333) + level (0.75rem #6b7280)
 function skillsTable(skills, useTimesFont) {
   if (!skills || skills.length === 0) return [];
@@ -230,9 +234,10 @@ function buildResumakeClassic(data) {
     });
   }
 
-  if (data.skills && data.skills.length > 0) {
+  const classicSkills = namedSkills(data.skills);
+  if (classicSkills.length > 0) {
     children.push(...sectionHeadingWithLine("Skills"));
-    children.push(...skillsTable(data.skills, false));
+    children.push(...skillsTable(classicSkills, false));
     children.push(new Paragraph({ text: "", spacing: { after: SP.blockAfter } }));
   }
 
@@ -435,9 +440,10 @@ function buildResumakeClassicSingle(data) {
     });
   }
 
-  if (data.skills && data.skills.length > 0) {
+  const shadedSkills = namedSkills(data.skills);
+  if (shadedSkills.length > 0) {
     children.push(shadedSectionHeading("Skills"));
-    children.push(...skillsTable(data.skills, true));
+    children.push(...skillsTable(shadedSkills, true));
     children.push(new Paragraph({ text: "", spacing: { after: SP.blockAfter } }));
   }
 
