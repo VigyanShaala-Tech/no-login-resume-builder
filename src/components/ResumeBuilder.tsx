@@ -185,6 +185,7 @@ export const ResumeBuilder = () => {
               variant="secondary"
               className="flex items-center space-x-2"
               disabled={isGeneratingPDF || isGeneratingWord}
+              data-testid="header-download-pdf"
             >
               {isGeneratingPDF ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -199,6 +200,7 @@ export const ResumeBuilder = () => {
               variant="secondary"
               className="flex items-center space-x-2"
               disabled={isGeneratingPDF || isGeneratingWord}
+              data-testid="header-download-word"
             >
               {isGeneratingWord ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

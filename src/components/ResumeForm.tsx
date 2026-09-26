@@ -309,7 +309,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
               id="fullName"
               value={resumeData.personalInfo.fullName}
               onChange={(e) => updatePersonalInfo("fullName", e.target.value)}
-              onBlur={() => updatePersonalInfo("fullName", toTitleCase(resumeData.personalInfo.fullName))}
+              onBlur={(e) => updatePersonalInfo("fullName", toTitleCase(e.target.value))}
               placeholder="John Doe"
             />
             <p className="text-xs text-muted-foreground mt-1">Must be Title Case (e.g. John Doe).</p>

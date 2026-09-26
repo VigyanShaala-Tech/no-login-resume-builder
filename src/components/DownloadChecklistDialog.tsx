@@ -100,6 +100,7 @@ export const DownloadChecklistDialog = ({
             className="flex items-center space-x-2"
             disabled={!ready || busy}
             onClick={onDownloadPdf}
+            data-testid="checklist-download-pdf"
           >
             {isGeneratingPDF ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
             <span>{isGeneratingPDF ? "Generating..." : "Download PDF"}</span>
@@ -110,6 +111,7 @@ export const DownloadChecklistDialog = ({
             className="flex items-center space-x-2"
             disabled={!ready || busy}
             onClick={onDownloadWord}
+            data-testid="checklist-download-word"
           >
             {isGeneratingWord ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
             <span>{isGeneratingWord ? "Generating..." : "Download Word"}</span>
