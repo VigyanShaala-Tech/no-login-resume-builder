@@ -3,7 +3,7 @@
  * Spacing aligned to PDF (CSS rem -> twips: 0.85rem=204, 0.25rem=60, 0.5rem=120).
  * Supports: resumake-classic (heading + line), resumake-classic-single (shaded headers).
  */
-const { Document, Packer, Paragraph, TextRun, BorderStyle, AlignmentType, Table, TableRow, TableCell, WidthType } = require("docx");
+const { Document, Packer, Paragraph, TextRun, BorderStyle, AlignmentType, Table, TableRow, TableCell, WidthType, TabStopType } = require("docx");
 
 // PDF-aligned spacing (twips). 1pt=20 twips; 0.85rem~10pt=200, 0.25rem~3pt=60, 0.5rem~6pt=120
 const SP = {
@@ -41,6 +41,40 @@ function formatEducationScore(edu) {
   }
   const stripped = value.replace(/\/\s*10$/i, "").trim();
   return "GPA: " + stripped + "/10";
+}
+
+const EDUCATION_RIGHT_TAB = 9360;
+
+function educationParagraphs(edu, dateStr, useTimes) {
+  const place = [edu.school, edu.location].filter((part) => part && String(part).trim()).join(", ");
+  const field = edu.field ? String(edu.field).trim() : "";
+  const score = formatEducationScore(edu);
+  const run = (opts) => new TextRun(useTimes ? { ...opts, font: FONT.times } : opts);
+  const tabStops = [{ type: TabStopType.RIGHT, position: EDUCATION_RIGHT_TAB }];
+  const paragraphs = [
+    new Paragraph({
+      tabStops,
+      children: [
+        run({ text: edu.degree ? String(edu.degree).trim() : "", bold: true, size: SZ.body, color: C.dark }),
+        ...(place ? [run({ text: (edu.degree && String(edu.degree).trim() ? ", " : "") + place, size: SZ.body, color: C.dark })] : []),
+        run({ text: "\t" + dateStr, size: SZ.body, color: C.light }),
+      ],
+      spacing: { after: field || score ? 40 : SP.blockAfter },
+    }),
+  ];
+  if (field || score) {
+    paragraphs.push(
+      new Paragraph({
+        tabStops,
+        children: [
+          ...(field ? [run({ text: field, italics: true, size: SZ.skillLevel, color: C.med })] : []),
+          ...(score ? [run({ text: "\t" + score, size: SZ.skillLevel, color: C.light })] : []),
+        ],
+        spacing: { after: SP.blockAfter },
+      })
+    );
+  }
+  return paragraphs;
 }
 
 function formatDate(dateString) {
@@ -188,26 +222,7 @@ function buildResumakeClassic(data) {
     children.push(...sectionHeadingWithLine("Education"));
     data.education.forEach((edu) => {
       const dateStr = `${formatDate(edu.startDate)} - ${edu.current ? "Present" : formatDate(edu.endDate)}`;
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: `${edu.school}${edu.location ? ", " + edu.location : ""}`, bold: true, size: SZ.body, color: C.dark }),
-            new TextRun({ text: `\t${dateStr}`, size: SZ.body, color: C.light }),
-          ],
-          spacing: { after: 40 },
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `${edu.degree} in ${edu.field}${formatEducationScore(edu) ? " • " + formatEducationScore(edu) : ""}`,
-              italics: true,
-              size: SZ.body,
-              color: C.med,
-            }),
-          ],
-          spacing: { after: SP.blockAfter },
-        })
-      );
+      children.push(...educationParagraphs(edu, dateStr, false));
     });
   }
 
@@ -458,25 +473,7 @@ function buildResumakeClassicSingle(data) {
     children.push(shadedSectionHeading("Education"));
     data.education.forEach((edu) => {
       const dateStr = `${formatDate(edu.startDate)} | ${edu.current ? "Present" : formatDate(edu.endDate)}`;
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun(tr({ text: `${edu.school}${edu.location ? ", " + edu.location : ""}`, bold: true, size: SZ.body })),
-            new TextRun(tr({ text: `\t${dateStr}`, size: SZ.body, color: C.light })),
-          ],
-          spacing: { after: 40 },
-        }),
-        new Paragraph({
-          children: [
-            new TextRun(tr({
-              text: `${edu.degree}${edu.field ? ", " + edu.field : ""}${formatEducationScore(edu) ? ", " + formatEducationScore(edu) : ""}`,
-              italics: true,
-              size: SZ.body,
-            })),
-          ],
-          spacing: { after: SP.blockAfter },
-        })
-      );
+      children.push(...educationParagraphs(edu, dateStr, true));
     });
   }
 

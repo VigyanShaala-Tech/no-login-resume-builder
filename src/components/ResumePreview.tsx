@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Mail, Phone, Globe, Linkedin, Calendar } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
-import { formatEducationScore } from "@/utils/resumeRules";
+import { educationEntryLines } from "@/utils/resumeRules";
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -17,6 +17,50 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       month: "short",
       year: "numeric"
     });
+  };
+
+  const renderEducationEntry = (
+    edu: ResumeData["education"][number],
+    options: {
+      dateSeparator: string;
+      degreeClass: string;
+      placeClass: string;
+      fieldClass: string;
+      scoreClass: string;
+      dateClass: string;
+      showCalendar?: boolean;
+      calendarClass?: string;
+    }
+  ) => {
+    const lines = educationEntryLines(edu);
+    const dateText = `${formatDate(edu.startDate)}${options.dateSeparator}${edu.current ? "Present" : formatDate(edu.endDate)}`;
+    return (
+      <>
+        <div className="flex justify-between items-start gap-4">
+          <h3 className={`min-w-0 ${options.degreeClass}`}>
+            {lines.degree}
+            {lines.place && (
+              <span className={`font-normal ${options.placeClass}`}>
+                {lines.degree ? ", " : ""}
+                {lines.place}
+              </span>
+            )}
+          </h3>
+          <div className={`shrink-0 text-right ${options.dateClass}`}>
+            <div className="flex items-center justify-end gap-1">
+              {options.showCalendar && <Calendar className={options.calendarClass || "w-3 h-3"} />}
+              <span>{dateText}</span>
+            </div>
+          </div>
+        </div>
+        {(lines.field || lines.score) && (
+          <div className="flex justify-between items-start gap-4">
+            <p className={`min-w-0 italic text-sm ${options.fieldClass}`}>{lines.field}</p>
+            {lines.score && <span className={`shrink-0 text-sm ${options.scoreClass}`}>{lines.score}</span>}
+          </div>
+        )}
+      </>
+    );
   };
 
   const renderModernTemplate = () => (
@@ -132,20 +176,15 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-4">
             {resumeData.education.map((edu) => (
               <div key={edu.id}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="text-gray-700 font-medium">{edu.school}</p>
-                    {edu.location && <p className="text-gray-600 text-sm">{edu.location}</p>}
-                    {formatEducationScore(edu) && <p className="text-gray-600 text-sm">{formatEducationScore(edu)}</p>}
-                  </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
-                    </div>
-                  </div>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " - ",
+                  degreeClass: "font-semibold text-gray-900",
+                  placeClass: "text-gray-700",
+                  fieldClass: "text-gray-600",
+                  scoreClass: "text-gray-600",
+                  dateClass: "text-sm text-gray-600",
+                  showCalendar: true,
+                })}
               </div>
             ))}
           </div>
@@ -393,16 +432,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-4">
             {resumeData.education.map((edu) => (
               <div key={edu.id}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="font-semibold text-gray-700">{edu.school}, {edu.location}</p>
-                    {formatEducationScore(edu) && <p className="text-gray-600">{formatEducationScore(edu)}</p>}
-                  </div>
-                  <span className="text-gray-600">
-                    {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
-                  </span>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " - ",
+                  degreeClass: "font-bold text-gray-900",
+                  placeClass: "text-gray-700",
+                  fieldClass: "text-gray-600",
+                  scoreClass: "text-gray-600",
+                  dateClass: "text-gray-600",
+                })}
               </div>
             ))}
           </div>
@@ -640,29 +677,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-4">
             {resumeData.education.map((edu) => (
               <div key={edu.id}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <span className="text-gray-600 text-sm">
-                      {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
-                    </span>
-                  </div>
-                  <div className="text-gray-600">
-                    <span>{edu.school}</span>
-                    {edu.location && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{edu.location}</span>
-                      </>
-                    )}
-                    {formatEducationScore(edu) && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{formatEducationScore(edu)}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " - ",
+                  degreeClass: "font-semibold text-gray-900",
+                  placeClass: "text-gray-600",
+                  fieldClass: "text-gray-600",
+                  scoreClass: "text-gray-600",
+                  dateClass: "text-sm text-gray-600",
+                })}
               </div>
             ))}
           </div>
@@ -936,18 +958,15 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-4">
             {resumeData.education.map((edu) => (
               <div key={edu.id} className="border-l-4 border-gray-300 pl-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="text-gray-700 font-medium">{edu.school}{edu.location && `, ${edu.location}`}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
-                  </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
-                    </div>
-                  </div>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " - ",
+                  degreeClass: "font-semibold text-gray-900",
+                  placeClass: "text-gray-700",
+                  fieldClass: "text-gray-600",
+                  scoreClass: "text-gray-600",
+                  dateClass: "text-sm text-gray-600",
+                  showCalendar: true,
+                })}
               </div>
             ))}
           </div>
@@ -1227,18 +1246,15 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-4">
             {resumeData.education.map((edu) => (
               <div key={edu.id} className="bg-purple-50 p-4 rounded-lg">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="text-gray-700 font-medium">{edu.school}{edu.location && `, ${edu.location}`}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
-                  </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
-                    </div>
-                  </div>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " - ",
+                  degreeClass: "font-semibold text-gray-900",
+                  placeClass: "text-gray-700",
+                  fieldClass: "text-gray-600",
+                  scoreClass: "text-gray-600",
+                  dateClass: "text-sm text-gray-600",
+                  showCalendar: true,
+                })}
               </div>
             ))}
           </div>
@@ -1512,18 +1528,16 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-6">
             {resumeData.education.map((edu) => (
               <div key={edu.id} className="border-l-4 border-gray-900 pl-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{edu.degree} in {edu.field}</h3>
-                    <p className="text-gray-700 font-semibold">{edu.school}{edu.location && `, ${edu.location}`}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
-                  </div>
-                  <div className="text-right text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}</span>
-                    </div>
-                  </div>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " - ",
+                  degreeClass: "font-bold text-gray-900",
+                  placeClass: "text-gray-700",
+                  fieldClass: "text-gray-600",
+                  scoreClass: "text-gray-600",
+                  dateClass: "text-gray-600",
+                  showCalendar: true,
+                  calendarClass: "w-4 h-4",
+                })}
               </div>
             ))}
           </div>
@@ -1780,15 +1794,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-0 ml-2">
             {resumeData.education.map((edu) => (
               <div key={edu.id} className="resumake-classic-item">
-                <div className="resumake-classic-item-header">
-                  <div>
-                    <h3 className="resumake-classic-institution">{edu.school}{edu.location && `, ${edu.location}`}</h3>
-                    <p className="resumake-classic-position">{edu.degree} in {edu.field}{formatEducationScore(edu) && ` • ${formatEducationScore(edu)}`}</p>
-                  </div>
-                  <div className="resumake-classic-date">
-                    {formatDate(edu.startDate)} - {edu.current ? "Present" : formatDate(edu.endDate)}
-                  </div>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " - ",
+                  degreeClass: "font-semibold text-[#333333]",
+                  placeClass: "text-[#333333]",
+                  fieldClass: "text-[#374151]",
+                  scoreClass: "text-[#6b7280]",
+                  dateClass: "resumake-classic-date",
+                })}
               </div>
             ))}
           </div>
@@ -2117,22 +2130,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           <div className="space-y-0 -ml-2">
             {resumeData.education.map((edu) => (
               <div key={edu.id} className="education-item">
-                <div className="flex justify-between items-start mb-0">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-black mb-0">
-                      {edu.school}
-                      {edu.location && `, ${edu.location}`}
-                    </h3>
-                    <p className="italic text-black mb-0">
-                      {edu.degree}
-                      {edu.field && `, ${edu.field}`}
-                      {formatEducationScore(edu) && `, ${formatEducationScore(edu)}`}
-                    </p>
-                  </div>
-                  <div className="text-right text-sm text-black">
-                    <div>{formatDate(edu.startDate)} | {edu.current ? "Present" : formatDate(edu.endDate)}</div>
-                  </div>
-                </div>
+                {renderEducationEntry(edu, {
+                  dateSeparator: " | ",
+                  degreeClass: "font-semibold text-black",
+                  placeClass: "text-black",
+                  fieldClass: "text-black",
+                  scoreClass: "text-black",
+                  dateClass: "text-sm text-black",
+                })}
               </div>
             ))}
           </div>

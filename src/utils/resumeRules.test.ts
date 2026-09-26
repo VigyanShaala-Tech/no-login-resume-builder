@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DOWNLOAD_CHECKLIST,
   applyTitleCaseName,
+  educationEntryLines,
   formatEducationScore,
   isChecklistComplete,
   isRichTextEmpty,
@@ -105,6 +106,35 @@ describe("formatEducationScore", () => {
 
   it("returns empty when there is no score", () => {
     expect(formatEducationScore({ gpa: "", scoreType: "gpa" })).toBe("");
+  });
+});
+
+describe("educationEntryLines", () => {
+  const edu = {
+    degree: "MSc Physics",
+    field: "Quantum Physics, Classical Physics",
+    school: "Univ of Pune",
+    location: "Pune",
+    gpa: "8.5",
+    scoreType: "gpa" as const,
+  };
+
+  it("keeps degree and school apart from field and score", () => {
+    expect(educationEntryLines(edu)).toEqual({
+      degree: "MSc Physics",
+      place: "Univ of Pune, Pune",
+      field: "Quantum Physics, Classical Physics",
+      score: "GPA: 8.5/10",
+    });
+  });
+
+  it("omits an empty field and an empty score", () => {
+    expect(educationEntryLines({ ...edu, field: "  ", gpa: "" })).toEqual({
+      degree: "MSc Physics",
+      place: "Univ of Pune, Pune",
+      field: "",
+      score: "",
+    });
   });
 });
 

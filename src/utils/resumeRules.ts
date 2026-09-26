@@ -132,6 +132,24 @@ export function formatEducationScore(edu: { gpa?: string; scoreType?: ScoreType 
   return `GPA: ${stripped}/10`;
 }
 
+/** Degree and school share the headline. Field and score stay on the next line. Empty parts are omitted. */
+export function educationEntryLines(edu: {
+  degree?: string;
+  field?: string;
+  school?: string;
+  location?: string;
+  gpa?: string;
+  scoreType?: ScoreType;
+}): { degree: string; place: string; field: string; score: string } {
+  const place = [edu.school?.trim(), edu.location?.trim()].filter(Boolean).join(", ");
+  return {
+    degree: edu.degree?.trim() ?? "",
+    place,
+    field: edu.field?.trim() ?? "",
+    score: formatEducationScore(edu),
+  };
+}
+
 function parseIsoDate(value: string): Date | null {
   if (!value) return null;
   const d = new Date(`${value}T00:00:00`);
