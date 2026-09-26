@@ -687,7 +687,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
 
       {/* Skills */}
       {namedSkills.length > 0 && (
-        <section className="mb-0">
+        <section className="mb-0 pb-3">
           <h2 className="minimal-section-header">
             Skills
           </h2>
@@ -1257,7 +1257,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
 
       {/* Skills */}
       {namedSkills.length > 0 && (
-        <section className="mb-0">
+        <section className="mb-0 pb-3">
           <h2 className="creative-section-header">
             Skills & Expertise
           </h2>
@@ -1274,7 +1274,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       {/* Projects */}
       {resumeData.projects && resumeData.projects.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-1 border-b-2 border-teal-500">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 mt-3 pb-1 border-b-2 border-teal-500">
             Creative Projects
           </h2>
           <div className="space-y-4">
@@ -1540,7 +1540,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
 
       {/* Skills */}
       {namedSkills.length > 0 && (
-        <section className="mb-0">
+        <section className="mb-0 pb-3">
           <h2 className="executive-section-header">
             Core Competencies
           </h2>
@@ -1560,7 +1560,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       {/* Projects */}
       {resumeData.projects && resumeData.projects.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b-4 border-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 mt-3 pb-2 border-b-4 border-gray-900">
             Strategic Initiatives
           </h2>
           <div className="space-y-6">

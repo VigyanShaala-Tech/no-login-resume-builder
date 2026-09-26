@@ -1,7 +1,9 @@
 /**
  * Build .docx from resume data (Option 2: docx package).
  * Spacing aligned to PDF (CSS rem -> twips: 0.85rem=204, 0.25rem=60, 0.5rem=120).
- * Supports: resumake-classic (heading + line), resumake-classic-single (shaded headers).
+ * Supports: resumake-classic, resumake-classic-single, and themed builders for
+ * modern, professional, minimal, classic, creative, executive.
+ * Photos are omitted in Word for this pass.
  */
 const { Document, Packer, Paragraph, TextRun, BorderStyle, AlignmentType, Table, TableRow, TableCell, WidthType, TabStopType } = require("docx");
 
@@ -594,11 +596,386 @@ function buildResumakeClassicSingle(data) {
   });
 }
 
+function formatPlace(name, location) {
+  return joinFilled([name, location], ", ");
+}
+
+function formatDateRange(start, end, current, separator) {
+  return joinFilled([formatDate(start), current ? "Present" : formatDate(end)], separator || " - ");
+}
+
+function headingBar(text, color) {
+  const lineColor = color || C.dark;
+  return [
+    new Paragraph({
+      children: [new TextRun({ text, bold: true, size: SZ.section, color: lineColor })],
+      spacing: { before: 180, after: 0 },
+    }),
+    new Paragraph({
+      border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: lineColor } },
+      spacing: { after: 80 },
+    }),
+  ];
+}
+
+function headingUpper(text) {
+  return [
+    new Paragraph({
+      children: [new TextRun({ text: String(text).toUpperCase(), bold: true, size: SZ.section, color: C.dark })],
+      spacing: { before: 180, after: 60 },
+    }),
+  ];
+}
+
+function itemRow(leftBold, leftRest, dateStr) {
+  const children = [
+    new TextRun({ text: leftBold || "", bold: true, size: SZ.body, color: C.dark }),
+  ];
+  if (leftRest) {
+    children.push(new TextRun({ text: leftRest, size: SZ.body, color: C.dark }));
+  }
+  if (dateStr) {
+    children.push(new TextRun({ text: "\t" + dateStr, size: SZ.body, color: C.light }));
+  }
+  return new Paragraph({
+    tabStops: [{ type: TabStopType.RIGHT, position: EDUCATION_RIGHT_TAB }],
+    children,
+    spacing: { after: 40 },
+  });
+}
+
+function appendThemedSections(children, data, theme) {
+  const heading = (text) =>
+    theme.heading === "upper" ? headingUpper(text) : headingBar(text, theme.color);
+  const p = data.personalInfo || {};
+  const dateSep = theme.dateSep || " - ";
+
+  if (p.summary) {
+    children.push(...heading(theme.labels.summary));
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: stripHtml(p.summary), size: SZ.body, color: C.med })],
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: SP.blockAfter },
+      })
+    );
+  }
+
+  if (data.experience && data.experience.length > 0) {
+    children.push(...heading(theme.labels.experience));
+    data.experience.forEach((exp) => {
+      const dateStr = formatDateRange(exp.startDate, exp.endDate, exp.current, dateSep);
+      const place = formatPlace(exp.company, exp.location);
+      if (theme.experience === "position-first") {
+        children.push(itemRow(exp.position, "", dateStr));
+        if (place) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: place, size: SZ.body, color: C.med })],
+              spacing: { after: SP.itemAfter },
+            })
+          );
+        }
+      } else {
+        children.push(itemRow(place, "", dateStr));
+        if (exp.position) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: exp.position, italics: true, size: SZ.body, color: C.med })],
+              spacing: { after: SP.itemAfter },
+            })
+          );
+        }
+      }
+      if (exp.description) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: stripHtml(exp.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+    });
+  }
+
+  if (data.education && data.education.length > 0) {
+    children.push(...heading(theme.labels.education));
+    data.education.forEach((edu) => {
+      const dateStr = formatDateRange(edu.startDate, edu.endDate, edu.current, dateSep);
+      children.push(...educationParagraphs(edu, dateStr, false));
+    });
+  }
+
+  const themeSkills = namedSkills(data.skills);
+  if (themeSkills.length > 0) {
+    children.push(...heading(theme.labels.skills));
+    if (theme.skills === "inline") {
+      const line = themeSkills.map((s) => (s.level ? `${s.name} (${s.level})` : s.name)).filter(Boolean).join(", ");
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: line, size: SZ.body, color: C.med })],
+          spacing: { after: SP.blockAfter },
+        })
+      );
+    } else {
+      children.push(...skillsTable(themeSkills, false));
+      children.push(new Paragraph({ text: "", spacing: { after: SP.blockAfter } }));
+    }
+  }
+
+  if (data.projects && data.projects.length > 0) {
+    children.push(...heading(theme.labels.projects));
+    data.projects.forEach((proj) => {
+      children.push(
+        itemRow(proj.name, "", proj.date ? formatDate(proj.date) : "")
+      );
+      if (proj.technologies) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: proj.technologies, italics: true, size: SZ.body, color: C.med })],
+            spacing: { after: SP.itemAfter },
+          })
+        );
+      }
+      if (proj.description) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: stripHtml(proj.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+    });
+  }
+
+  if (data.achievements && data.achievements.length > 0) {
+    children.push(...heading(theme.labels.achievements));
+    data.achievements.forEach((a) => {
+      children.push(itemRow(a.title, "", a.date ? formatDate(a.date) : ""));
+      if (a.description) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+    });
+  }
+
+  if (data.awards && data.awards.length > 0) {
+    children.push(...heading(theme.labels.awards));
+    data.awards.forEach((a) => {
+      children.push(itemRow(a.title, "", a.date ? formatDate(a.date) : ""));
+      if (a.issuer) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: a.issuer, italics: true, size: SZ.body, color: C.med })],
+            spacing: { after: SP.itemAfter },
+          })
+        );
+      }
+      if (a.description) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+    });
+  }
+
+  if (data.certifications && data.certifications.length > 0) {
+    children.push(...heading(theme.labels.certs));
+    data.certifications.forEach((c) => {
+      children.push(itemRow(c.name, "", c.date ? formatDate(c.date) : ""));
+      if (c.issuer) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: c.issuer, italics: true, size: SZ.body, color: C.med })],
+            spacing: { after: SP.itemAfter },
+          })
+        );
+      }
+      if (c.credentialId) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "Credential ID: " + c.credentialId, size: SZ.body, color: C.light })],
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+    });
+  }
+
+  if (data.publications && data.publications.length > 0) {
+    children.push(...heading(theme.labels.pubs));
+    data.publications.forEach((pub) => {
+      children.push(itemRow(pub.title, "", pub.date ? formatDate(pub.date) : ""));
+      if (pub.journal) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: pub.journal, italics: true, size: SZ.body, color: C.med })],
+            spacing: { after: SP.itemAfter },
+          })
+        );
+      }
+      if (pub.authors) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "Authors: " + pub.authors, size: SZ.body, color: C.light })],
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+    });
+  }
+}
+
+function buildThemedResume(data, theme) {
+  const children = [];
+  const p = data.personalInfo || {};
+  const nameAlign = theme.nameAlign === "center" ? AlignmentType.CENTER : AlignmentType.LEFT;
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: p.fullName || "Your Name",
+          bold: true,
+          size: theme.nameSize || 48,
+          color: theme.nameColor || C.dark,
+        }),
+      ],
+      alignment: nameAlign,
+      spacing: { after: SP.nameAfter },
+    })
+  );
+
+  if (theme.contact === "stacked") {
+    [p.location, p.phone, p.email, p.website, p.linkedin].filter((part) => part && String(part).trim()).forEach((line) => {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: line, size: SZ.body, color: C.med })],
+          alignment: nameAlign,
+          spacing: { after: 20 },
+        })
+      );
+    });
+    children.push(new Paragraph({ text: "", spacing: { after: SP.contactAfter } }));
+  } else {
+    const contact =
+      theme.contact === "shaded"
+        ? joinFilled([p.email, p.phone, p.linkedin, p.location], " | ")
+        : joinFilled([p.email, p.phone, p.location, p.website, p.linkedin], theme.contactSep || " | ");
+    if (contact) {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: contact, size: SZ.body, color: C.med })],
+          alignment: nameAlign,
+          spacing: { after: SP.contactAfter },
+        })
+      );
+    }
+  }
+
+  appendThemedSections(children, data, theme);
+  return new Document({ sections: [{ properties: {}, children }] });
+}
+
+const DEFAULT_LABELS = {
+  summary: "Professional Summary",
+  experience: "Professional Experience",
+  education: "Education",
+  skills: "Skills",
+  projects: "Projects",
+  achievements: "Achievements",
+  awards: "Awards",
+  certs: "Courses & Certifications",
+  pubs: "Publications",
+};
+
+function buildModern(data) {
+  return buildThemedResume(data, {
+    color: "2C4869",
+    nameSize: 56,
+    experience: "position-first",
+    labels: DEFAULT_LABELS,
+  });
+}
+
+function buildProfessional(data) {
+  return buildThemedResume(data, {
+    color: "374151",
+    nameSize: 56,
+    experience: "position-first",
+    labels: { ...DEFAULT_LABELS, skills: "Core Competencies", projects: "Key Projects" },
+  });
+}
+
+function buildMinimal(data) {
+  return buildThemedResume(data, {
+    color: "9CA3AF",
+    nameSize: 44,
+    skills: "inline",
+    experience: "position-first",
+    labels: DEFAULT_LABELS,
+  });
+}
+
+function buildTraditionalClassic(data) {
+  return buildThemedResume(data, {
+    heading: "upper",
+    nameAlign: "center",
+    contact: "stacked",
+    experience: "position-first",
+    labels: { ...DEFAULT_LABELS, summary: "Objective" },
+  });
+}
+
+function buildCreative(data) {
+  return buildThemedResume(data, {
+    color: "0D9488",
+    nameSize: 56,
+    skills: "inline",
+    experience: "position-first",
+    labels: { ...DEFAULT_LABELS, skills: "Skills & Expertise", projects: "Creative Projects" },
+  });
+}
+
+function buildExecutive(data) {
+  return buildThemedResume(data, {
+    color: "111827",
+    nameSize: 64,
+    nameColor: "111827",
+    experience: "position-first",
+    labels: {
+      ...DEFAULT_LABELS,
+      skills: "Core Competencies",
+      projects: "Strategic Initiatives",
+      achievements: "Key Achievements",
+    },
+  });
+}
+
 async function buildDocx(resumeData, templateId) {
-  const doc =
-    templateId === "resumake-classic-single"
-      ? buildResumakeClassicSingle(resumeData)
-      : buildResumakeClassic(resumeData);
+  const builders = {
+    modern: buildModern,
+    professional: buildProfessional,
+    minimal: buildMinimal,
+    classic: buildTraditionalClassic,
+    creative: buildCreative,
+    executive: buildExecutive,
+    "resumake-classic": buildResumakeClassic,
+    "resumake-classic-single": buildResumakeClassicSingle,
+  };
+  const build = builders[templateId] || buildResumakeClassic;
+  const doc = build(resumeData);
   return Packer.toBuffer(doc);
 }
 

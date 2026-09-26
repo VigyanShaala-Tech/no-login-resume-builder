@@ -80,8 +80,16 @@ export const TemplateSelector = ({ selectedTemplate, onTemplateSelect }: Templat
   
   const availableTemplates = isProduction 
     ? templates.filter(template => 
-        template.id === "resumake-classic" || 
-        template.id === "resumake-classic-single"
+        [
+          "resumake-classic",
+          "resumake-classic-single",
+          "modern",
+          "professional",
+          "minimal",
+          "classic",
+          "creative",
+          "executive",
+        ].includes(template.id)
       )
     : templates;
 
