@@ -8,7 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Upload, Image } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
 import { RichTextEditor } from "./RichTextEditor";
-import { useRef } from "react";
+import { PhotoCropDialog } from "./PhotoCropDialog";
+import { useRef, useState } from "react";
 import { todayIsoDate, toTitleCase } from "@/utils/resumeRules";
 
 interface ResumeFormProps {
@@ -20,6 +21,7 @@ interface ResumeFormProps {
 
 export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedTemplate }: ResumeFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   
   // Check if current template supports photos
   const templatesWithPhoto = ['modern', 'classic', 'creative', 'executive'];
@@ -34,14 +36,14 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        updatePersonalInfo("photo", result);
-      };
-      reader.readAsDataURL(file);
-    }
+    event.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result === "string") setCropSrc(result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const addExperience = () => {
@@ -1091,5 +1093,20 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
 
   const CurrentSection = sectionComponents[activeSection as keyof typeof sectionComponents];
 
-  return <div className="animate-fade-in">{CurrentSection()}</div>;
+  return (
+    <div className="animate-fade-in">
+      {CurrentSection()}
+      <PhotoCropDialog
+        imageSrc={cropSrc}
+        open={cropSrc !== null}
+        onOpenChange={(open) => {
+          if (!open) setCropSrc(null);
+        }}
+        onConfirm={(dataUrl) => {
+          updatePersonalInfo("photo", dataUrl);
+          setCropSrc(null);
+        }}
+      />
+    </div>
+  );
 };
