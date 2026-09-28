@@ -18,6 +18,11 @@
 ### 5. Mandatory fields (required for PDF download)
 - **Validate only:** Personal required (Name, Email, Phone, Location). When any Education / Experience / Certification entry exists, that entry must be complete (no incomplete entries). No minimum skills; zero skills is allowed.
 
+### 6. Save & Get Link (no login)
+- **Pastebin-style backend:** User saves resume → backend stores JSON → returns short URL (e.g. `/resume/x7Kp2m`). Anyone with link can view/edit. Works across devices, no sign-up.
+- **Implementation:** New Supabase table `resume_drafts` (id, resume_data jsonb, template_id, created_at, expires_at). RLS: anon can INSERT and SELECT. Route `/resume/:id`. "Save & get link" button → copy URL. On load with id in URL → fetch and hydrate form. Optional: localStorage auto-save for same-device.
+- **Effort:** ~2–4 hours. Stack: Supabase + existing React/Vite.
+
 ### Implementation mapping (where to build)
 | # | Area | Likely place |
 |---|------|---------------|
@@ -26,6 +31,7 @@
 | 3 | Education ongoing | ResumeData education model + form UI + ResumePreview (end date "Present" when currently studying) |
 | 4 | Date format | All templates already use Month/Year in most places; only one or two spots are missing or wrong. Use the existing `formatDate()` / pattern there for those values. |
 | 5 | Mandatory fields / PDF gate | Validation: Personal required; when any Education/Experience/Cert entry exists it must be complete. No skills validation. Block Download until valid; show errors in form. |
+| 6 | Save & get link | Supabase `resume_drafts` table + RLS; ResumeBuilder route `/resume/:id`; save/load draft utils; "Save & get link" button + copy URL; optional localStorage auto-save |
 
 ---
 

@@ -15,6 +15,34 @@ import {
   validateResumeData,
   type ResumeData,
 } from "@/utils/resumeRules";
+import { SAMPLE_RESUME } from "@/utils/sampleResume";
+
+const TEMPLATE_IDS = [
+  "resumake-classic",
+  "resumake-classic-single",
+  "modern",
+  "classic",
+  "minimal",
+  "professional",
+  "creative",
+  "executive",
+  "sidebar",
+] as const;
+
+function resumeFromUrl(): ResumeData {
+  if (typeof window === "undefined") return initialResumeData;
+  return new URLSearchParams(window.location.search).get("sample") === "1"
+    ? SAMPLE_RESUME
+    : initialResumeData;
+}
+
+function templateFromUrl(): string {
+  if (typeof window === "undefined") return "resumake-classic";
+  const template = new URLSearchParams(window.location.search).get("template");
+  return template && TEMPLATE_IDS.includes(template as (typeof TEMPLATE_IDS)[number])
+    ? template
+    : "resumake-classic";
+}
 
 export type { ResumeData };
 
@@ -43,8 +71,8 @@ const initialResumeData: ResumeData = {
 };
 
 export const ResumeBuilder = () => {
-  const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
-  const [selectedTemplate, setSelectedTemplate] = useState("resumake-classic");
+  const [resumeData, setResumeData] = useState<ResumeData>(resumeFromUrl);
+  const [selectedTemplate, setSelectedTemplate] = useState(templateFromUrl);
   const [activeSection, setActiveSection] = useState("personal");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);

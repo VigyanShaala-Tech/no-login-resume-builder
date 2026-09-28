@@ -24,7 +24,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   
   // Check if current template supports photos
-  const templatesWithPhoto = ['modern', 'classic', 'creative', 'executive'];
+  const templatesWithPhoto = ['modern', 'classic', 'creative', 'executive', 'sidebar'];
   const supportsPhoto = templatesWithPhoto.includes(selectedTemplate);
   
   const updatePersonalInfo = (field: string, value: string) => {

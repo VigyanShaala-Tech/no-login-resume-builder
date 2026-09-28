@@ -1,11 +1,11 @@
 /**
  * Build .docx from resume data (Option 2: docx package).
  * Spacing aligned to PDF (CSS rem -> twips: 0.85rem=204, 0.25rem=60, 0.5rem=120).
- * Supports: resumake-classic, resumake-classic-single, and themed builders for
+ * Supports: resumake-classic, resumake-classic-single, sidebar, and themed builders for
  * modern, professional, minimal, classic, creative, executive.
- * Photos are omitted in Word for this pass.
+ * Photos are omitted in Word except sidebar, which embeds the cropped square.
  */
-const { Document, Packer, Paragraph, TextRun, BorderStyle, AlignmentType, Table, TableRow, TableCell, WidthType, TabStopType } = require("docx");
+const { Document, Packer, Paragraph, TextRun, ImageRun, BorderStyle, AlignmentType, Table, TableRow, TableCell, WidthType, TabStopType, VerticalAlign } = require("docx");
 
 // PDF-aligned spacing (twips). 1pt=20 twips; 0.85rem~10pt=200, 0.25rem~3pt=60, 0.5rem~6pt=120
 const SP = {
@@ -963,6 +963,213 @@ function buildExecutive(data) {
   });
 }
 
+const SIDEBAR_NAVY = "1B3A4B";
+const SIDEBAR_RAIL = 3800;
+const SIDEBAR_MAIN = 8080;
+const SIDEBAR_PAGE = SIDEBAR_RAIL + SIDEBAR_MAIN;
+const noLine = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+const noCellBorders = { top: noLine, bottom: noLine, left: noLine, right: noLine };
+
+function sidebarDateRange(start, end, current) {
+  const left = formatDate(start);
+  const right = current ? "Present" : formatDate(end);
+  return [left, right].filter(Boolean).join(" - ");
+}
+
+function sidebarPhotoRun(dataUrl) {
+  if (!dataUrl || typeof dataUrl !== "string") return null;
+  const match = dataUrl.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/i);
+  if (!match) return null;
+  return new ImageRun({
+    type: match[1].toLowerCase() === "png" ? "png" : "jpg",
+    data: Buffer.from(match[2], "base64"),
+    transformation: { width: 110, height: 110 },
+  });
+}
+
+function sidebarRailParagraph(text, opts = {}) {
+  return new Paragraph({
+    alignment: opts.align || AlignmentType.LEFT,
+    spacing: { before: opts.before || 0, after: opts.after == null ? 60 : opts.after },
+    children: [
+      new TextRun({
+        text,
+        bold: !!opts.bold,
+        italics: !!opts.italics,
+        size: opts.size || 18,
+        color: opts.color || "FFFFFF",
+        font: "Calibri",
+      }),
+    ],
+  });
+}
+
+function sidebarMainParagraph(runs, opts = {}) {
+  return new Paragraph({
+    alignment: opts.align,
+    spacing: { before: opts.before || 0, after: opts.after == null ? 60 : opts.after },
+    border: opts.border,
+    children: runs,
+  });
+}
+
+function sidebarHeading(label) {
+  return sidebarMainParagraph(
+    [new TextRun({ text: label.toUpperCase(), bold: true, size: 18, color: "222222", font: "Calibri", characterSpacing: 60 })],
+    { before: 200, after: 80, border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "D5D8DC" } } }
+  );
+}
+
+function buildSidebar(data) {
+  const p = data.personalInfo || {};
+  const rail = [];
+  const main = [];
+
+  const photo = sidebarPhotoRun(p.photo);
+  if (photo) {
+    rail.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [photo] }));
+  }
+
+  const contact = [
+    ["Phone", p.phone],
+    ["Email", p.email],
+    ["Location", p.location],
+    ["Website", p.website],
+    ["LinkedIn", p.linkedin],
+  ].filter(([, value]) => value && String(value).trim());
+  if (contact.length) {
+    rail.push(sidebarRailParagraph("CONTACT", { bold: true, size: 20, before: 80, after: 80 }));
+    contact.forEach(([, value]) => rail.push(sidebarRailParagraph(String(value).trim(), { size: 18, after: 40 })));
+  }
+
+  if (data.education && data.education.length) {
+    rail.push(sidebarRailParagraph("EDUCATION", { bold: true, size: 20, before: 200, after: 80 }));
+    data.education.forEach((edu) => {
+      const place = [edu.school, edu.location].filter((part) => part && String(part).trim()).join(", ");
+      const field = edu.field ? String(edu.field).trim() : "";
+      const score = formatEducationScore(edu);
+      const dates = sidebarDateRange(edu.startDate, edu.endDate, edu.current);
+      if (place) rail.push(sidebarRailParagraph(place, { bold: true, size: 20, after: 20 }));
+      if (edu.degree && String(edu.degree).trim()) rail.push(sidebarRailParagraph(String(edu.degree).trim(), { after: 20 }));
+      if (field) rail.push(sidebarRailParagraph(field, { after: 20 }));
+      if (score) rail.push(sidebarRailParagraph(score, { after: 20 }));
+      if (dates) rail.push(sidebarRailParagraph(dates, { after: 120 }));
+    });
+  }
+
+  const skills = namedSkills(data.skills);
+  if (skills.length) {
+    rail.push(sidebarRailParagraph("SKILLS", { bold: true, size: 20, before: 160, after: 80 }));
+    skills.forEach((skill) => {
+      const level = skill.level && String(skill.level).trim();
+      rail.push(sidebarRailParagraph("•  " + skill.name.trim() + (level ? "  " + level : ""), { after: 40 }));
+    });
+  }
+  if (!rail.length) rail.push(sidebarRailParagraph(""));
+
+  const nameWords = (p.fullName || "Your Name").trim().split(/\s+/).filter(Boolean);
+  nameWords.forEach((word, index) => {
+    main.push(
+      sidebarMainParagraph(
+        [new TextRun({ text: word.toUpperCase(), bold: true, size: 56, color: "2A2A2A", font: "Calibri" })],
+        { after: index === nameWords.length - 1 ? 200 : 0 }
+      )
+    );
+  });
+
+  if (p.summary) {
+    main.push(sidebarHeading("About Me"));
+    main.push(sidebarMainParagraph([new TextRun({ text: stripHtml(p.summary), size: 20, color: "374151", font: "Calibri" })], { after: 80 }));
+  }
+
+  if (data.experience && data.experience.length) {
+    main.push(sidebarHeading("Experience"));
+    data.experience.forEach((exp) => {
+      const place = [exp.company, exp.location].filter((part) => part && String(part).trim()).join(", ");
+      const dates = sidebarDateRange(exp.startDate, exp.endDate, exp.current);
+      main.push(
+        sidebarMainParagraph(
+          [
+            new TextRun({ text: "●  " + (exp.position || ""), bold: true, size: 22, color: "1A1A1A", font: "Calibri" }),
+            ...(dates ? [new TextRun({ text: "    " + dates, size: 18, color: "6B7280", font: "Calibri" })] : []),
+          ],
+          { before: 80, after: 20 }
+        )
+      );
+      if (place) {
+        main.push(sidebarMainParagraph([new TextRun({ text: place, italics: true, size: 20, color: "4B5563", font: "Calibri" })], { after: 40 }));
+      }
+      if (exp.description) {
+        main.push(sidebarMainParagraph([new TextRun({ text: stripHtml(exp.description), size: 20, color: "374151", font: "Calibri" })], { after: 80 }));
+      }
+    });
+  }
+
+  const extraSections = [
+    ["Projects", data.projects, (item) => ({ title: item.name, sub: item.technologies, date: item.date, body: item.description })],
+    ["Achievements", data.achievements, (item) => ({ title: item.title, date: item.date, body: item.description })],
+    ["Awards", data.awards, (item) => ({ title: item.title, sub: item.issuer, date: item.date, body: item.description })],
+    ["Certifications", data.certifications, (item) => ({ title: item.name, sub: item.issuer, date: item.date, body: item.credentialId ? "Credential ID: " + item.credentialId : "" })],
+    ["Publications", data.publications, (item) => ({ title: item.title, sub: item.journal, note: item.authors ? "Authors: " + item.authors : "", date: item.date, body: item.link })],
+  ];
+  extraSections.forEach(([label, items, mapItem]) => {
+    if (!items || !items.length) return;
+    main.push(sidebarHeading(label));
+    items.forEach((item) => {
+      const row = mapItem(item);
+      const dateText = row.date ? formatDate(row.date) : "";
+      main.push(
+        sidebarMainParagraph(
+          [
+            new TextRun({ text: row.title || "", bold: true, size: 22, color: "1A1A1A", font: "Calibri" }),
+            ...(dateText ? [new TextRun({ text: "    " + dateText, size: 18, color: "6B7280", font: "Calibri" })] : []),
+          ],
+          { before: 60, after: 20 }
+        )
+      );
+      if (row.sub) main.push(sidebarMainParagraph([new TextRun({ text: row.sub, italics: true, size: 20, color: "4B5563", font: "Calibri" })], { after: 20 }));
+      if (row.note) main.push(sidebarMainParagraph([new TextRun({ text: row.note, size: 18, color: "4B5563", font: "Calibri" })], { after: 20 }));
+      if (row.body) main.push(sidebarMainParagraph([new TextRun({ text: stripHtml(row.body), size: 20, color: "374151", font: "Calibri" })], { after: 60 }));
+    });
+  });
+
+  if (!main.length) main.push(sidebarMainParagraph([new TextRun({ text: "" })]));
+
+  const railCell = new TableCell({
+    width: { size: SIDEBAR_RAIL, type: WidthType.DXA },
+    verticalAlign: VerticalAlign.TOP,
+    shading: { fill: SIDEBAR_NAVY },
+    borders: noCellBorders,
+    margins: { top: 220, bottom: 200, left: 200, right: 160 },
+    children: rail,
+  });
+  const mainCell = new TableCell({
+    width: { size: SIDEBAR_MAIN, type: WidthType.DXA },
+    verticalAlign: VerticalAlign.TOP,
+    borders: noCellBorders,
+    margins: { top: 220, bottom: 200, left: 240, right: 220 },
+    children: main,
+  });
+
+  const table = new Table({
+    width: { size: SIDEBAR_PAGE, type: WidthType.DXA },
+    columnWidths: [SIDEBAR_RAIL, SIDEBAR_MAIN],
+    borders: noCellBorders,
+    rows: [new TableRow({ cantSplit: true, children: [railCell, mainCell] })],
+  });
+
+  return new Document({
+    sections: [
+      {
+        properties: {
+          page: { margin: { top: 280, bottom: 280, left: 0, right: 280 } },
+        },
+        children: [table],
+      },
+    ],
+  });
+}
+
 async function buildDocx(resumeData, templateId) {
   const builders = {
     modern: buildModern,
@@ -973,6 +1180,7 @@ async function buildDocx(resumeData, templateId) {
     executive: buildExecutive,
     "resumake-classic": buildResumakeClassic,
     "resumake-classic-single": buildResumakeClassicSingle,
+    sidebar: buildSidebar,
   };
   const build = builders[templateId] || buildResumakeClassic;
   const doc = build(resumeData);
