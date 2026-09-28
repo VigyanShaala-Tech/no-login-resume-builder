@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Download, FileText, User, Briefcase, GraduationCap, Star, Loader2 } from "lucide-react";
 import { ResumeForm } from "./ResumeForm";
@@ -16,18 +15,7 @@ import {
   type ResumeData,
 } from "@/utils/resumeRules";
 import { SAMPLE_RESUME } from "@/utils/sampleResume";
-
-const TEMPLATE_IDS = [
-  "resumake-classic",
-  "resumake-classic-single",
-  "modern",
-  "classic",
-  "minimal",
-  "professional",
-  "creative",
-  "executive",
-  "sidebar",
-] as const;
+import { isTemplateId } from "@/utils/templates";
 
 function resumeFromUrl(): ResumeData {
   if (typeof window === "undefined") return initialResumeData;
@@ -39,9 +27,7 @@ function resumeFromUrl(): ResumeData {
 function templateFromUrl(): string {
   if (typeof window === "undefined") return "resumake-classic";
   const template = new URLSearchParams(window.location.search).get("template");
-  return template && TEMPLATE_IDS.includes(template as (typeof TEMPLATE_IDS)[number])
-    ? template
-    : "resumake-classic";
+  return template && isTemplateId(template) ? template : "resumake-classic";
 }
 
 export type { ResumeData };
@@ -244,15 +230,9 @@ export const ResumeBuilder = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Template Selector */}
-        <Card className="mb-8 shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span>Choose Template</span>
-              <Badge variant="secondary">{selectedTemplate}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TemplateSelector 
+        <Card className="mb-6 shadow-card">
+          <CardContent className="p-4">
+            <TemplateSelector
               selectedTemplate={selectedTemplate}
               onTemplateSelect={setSelectedTemplate}
             />

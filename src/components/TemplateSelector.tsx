@@ -1,6 +1,9 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { TEMPLATE_IDS } from "@/utils/templates";
+
+const HIDDEN_KEY = "resume-templates-hidden";
 
 interface Template {
   id: string;
@@ -193,65 +196,64 @@ interface TemplateSelectorProps {
 }
 
 export const TemplateSelector = ({ selectedTemplate, onTemplateSelect }: TemplateSelectorProps) => {
+  const [hidden, setHidden] = useState(false);
   const isProduction = process.env.NODE_ENV === "production";
 
-  const liveIds = [
-    "resumake-classic",
-    "resumake-classic-single",
-    "modern",
-    "classic",
-    "minimal",
-    "professional",
-    "creative",
-    "executive",
-    "sidebar",
-  ];
+  useEffect(() => {
+    setHidden(sessionStorage.getItem(HIDDEN_KEY) === "1");
+  }, []);
+
+  const toggleHidden = () => {
+    const next = !hidden;
+    setHidden(next);
+    sessionStorage.setItem(HIDDEN_KEY, next ? "1" : "0");
+  };
+
+  const liveIds = [...TEMPLATE_IDS];
 
   const availableTemplates = isProduction
     ? templates.filter((template) => liveIds.includes(template.id))
     : templates;
+  const selected = availableTemplates.find((template) => template.id === selectedTemplate);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {availableTemplates.map((template) => (
-        <Card
-          key={template.id}
-          className={`cursor-pointer transition-all duration-200 hover:shadow-card ${
-            selectedTemplate === template.id
-              ? "ring-2 ring-primary shadow-elegant"
-              : "hover:border-primary/50"
-          }`}
-          onClick={() => onTemplateSelect(template.id)}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">{template.name}</h3>
-                <p className="text-muted-foreground text-sm">{template.description}</p>
-              </div>
-              {selectedTemplate === template.id && (
-                <div className="flex-shrink-0 ml-2">
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-primary-foreground" />
-                  </div>
+    <div>
+      <div className={`flex items-center justify-between gap-3 ${hidden ? "" : "mb-3"}`}>
+        <div className="flex items-center gap-2 min-w-0">
+          <h2 className="font-semibold text-lg shrink-0">Templates</h2>
+          {selected && <span className="text-sm text-muted-foreground truncate">{selected.name}</span>}
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={toggleHidden}>
+          {hidden ? "Change template" : "Hide templates"}
+        </Button>
+      </div>
+      {!hidden && (
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {availableTemplates.map((template) => {
+            const selectedThis = selectedTemplate === template.id;
+            return (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => onTemplateSelect(template.id)}
+                className="shrink-0 w-36 text-left"
+              >
+                <div
+                  className={`h-44 bg-white rounded-md border overflow-hidden ${
+                    selectedThis ? "ring-2 ring-primary" : "border-gray-200"
+                  }`}
+                >
+                  <TemplateThumb id={template.id} />
                 </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="h-20 bg-white rounded border border-gray-200 overflow-hidden relative">
-                <TemplateThumb id={template.id} />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Badge variant={template.hasPhoto ? "default" : "secondary"} className="text-xs">
-                  {template.hasPhoto ? "With Photo" : "No Photo"}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+                <div className="mt-1.5 flex items-center gap-1 text-sm font-medium">
+                  {selectedThis && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                  <span className="truncate">{template.name}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
