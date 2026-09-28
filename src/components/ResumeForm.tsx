@@ -11,6 +11,7 @@ import { RichTextEditor } from "./RichTextEditor";
 import { PhotoCropDialog } from "./PhotoCropDialog";
 import { useRef, useState } from "react";
 import { todayIsoDate, toTitleCase } from "@/utils/resumeRules";
+import { templateSupportsPhoto } from "@/utils/templates";
 
 interface ResumeFormProps {
   resumeData: ResumeData;
@@ -23,9 +24,7 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   
-  // Check if current template supports photos
-  const templatesWithPhoto = ['modern', 'classic', 'creative', 'executive', 'sidebar'];
-  const supportsPhoto = templatesWithPhoto.includes(selectedTemplate);
+  const supportsPhoto = templateSupportsPhoto(selectedTemplate);
   
   const updatePersonalInfo = (field: string, value: string) => {
     setResumeData({

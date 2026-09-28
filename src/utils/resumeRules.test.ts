@@ -139,6 +139,10 @@ describe("educationEntryLines", () => {
       score: "",
     });
   });
+
+  it("keeps location when school is empty", () => {
+    expect(educationEntryLines({ ...edu, school: "" }).place).toBe("Pune");
+  });
 });
 
 describe("formatContactLine", () => {
@@ -158,6 +162,16 @@ describe("formatContactLine", () => {
       "vijayacads@gmail.com - +917028422265 - Pune India"
     );
   });
+
+  it("puts website before LinkedIn on Classic and omits website on Shaded", () => {
+    const withLinks = { ...info, website: "jordanhale.dev", linkedin: "linkedin.com/in/jordanhale" };
+    expect(formatContactLine(withLinks, "classic")).toBe(
+      "vijayacads@gmail.com - +917028422265 - Pune India - jordanhale.dev - linkedin.com/in/jordanhale"
+    );
+    expect(formatContactLine(withLinks, "shaded")).toBe(
+      "vijayacads@gmail.com | +917028422265 | linkedin.com/in/jordanhale | Pune India"
+    );
+  });
 });
 
 describe("formatPlace and formatDateRange", () => {
@@ -168,6 +182,11 @@ describe("formatPlace and formatDateRange", () => {
 
   it("uses Present when the role is current", () => {
     expect(formatDateRange("2020-01-01", "", true)).toBe("Jan 2020 - Present");
+  });
+
+  it("omits empty dates and can use a pipe separator", () => {
+    expect(formatDateRange("", "", false)).toBe("");
+    expect(formatDateRange("2020-01-01", "2021-06-01", false, " | ")).toBe("Jan 2020 | Jun 2021");
   });
 });
 

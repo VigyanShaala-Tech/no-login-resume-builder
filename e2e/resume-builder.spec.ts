@@ -6,7 +6,9 @@ import {
   completeChecklist,
   downloadFromChecklist,
   expectToast,
+  fillPersonal,
   fillPersonalAndSkills,
+  fillTwoSkills,
   openDownloadChecklist,
 } from "./helpers/fillValidResume";
 
@@ -100,4 +102,61 @@ test("smoke: Download PDF and Word produce files", async ({ page }) => {
   await openDownloadChecklist(page);
   await completeChecklist(page);
   await downloadFromChecklist(page, "word");
+});
+
+const LIVE_TEMPLATE_NAMES = [
+  "Classic",
+  "Shaded Headers",
+  "Modern",
+  "Traditional",
+  "Minimal",
+  "Professional",
+  "Creative",
+  "Executive",
+  "Sidebar",
+] as const;
+
+test("home shows every live template including Sidebar", async ({ page }) => {
+  const cards = page.locator("button.shrink-0.w-36");
+  await expect(cards).toHaveCount(LIVE_TEMPLATE_NAMES.length);
+  for (const name of LIVE_TEMPLATE_NAMES) {
+    await expect(cards.filter({ hasText: name })).toHaveCount(1);
+  }
+});
+
+test("classic preview joins contact with dashes and hides Skills until a name is entered", async ({ page }) => {
+  await fillPersonal(page);
+  const preview = page.locator("#resume-preview");
+  await expect(preview).toContainText("jane@example.com - 9876543210 - Bengaluru");
+  await expect(preview.getByRole("heading", { name: "Skills", exact: true })).toHaveCount(0);
+
+  await fillTwoSkills(page);
+  await expect(preview).toContainText("Python");
+  await expect(preview.getByRole("heading", { name: "Skills", exact: true })).toBeVisible();
+});
+
+test("sample=1 loads Jordan Hale on Modern, Creative, and Sidebar", async ({ page }) => {
+  for (const template of ["modern", "creative", "sidebar"] as const) {
+    await page.goto(`/?sample=1&template=${template}`);
+    const preview = page.locator("#resume-preview");
+    await expect(preview).toContainText("jordan.hale@email.com");
+    await expect(preview).toContainText("TypeScript");
+    await expect(preview).toContainText("Northstar Labs");
+  }
+});
+
+test("Modern photo upload opens the crop dialog", async ({ page }) => {
+  await page.locator("button.shrink-0.w-36").filter({ hasText: "Modern" }).click();
+  await page.getByRole("button", { name: "Personal", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Upload Photo" })).toBeVisible();
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "base64"
+  );
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "photo.png",
+    mimeType: "image/png",
+    buffer: png,
+  });
+  await expect(page.getByRole("heading", { name: "Crop photo" })).toBeVisible();
 });

@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 export async function fillPersonal(page: Page, name = "Jane Doe") {
-  await page.getByRole("button", { name: "Personal" }).click();
+  await page.getByRole("button", { name: "Personal", exact: true }).click();
   await page.getByLabel("Full Name *").fill(name);
   await page.getByLabel("Full Name *").blur();
   await page.getByLabel(/Email/).fill("jane@example.com");
@@ -11,7 +11,7 @@ export async function fillPersonal(page: Page, name = "Jane Doe") {
 }
 
 export async function fillTwoSkills(page: Page) {
-  await page.getByRole("button", { name: "Skills" }).click();
+  await page.getByRole("button", { name: "Skills", exact: true }).click();
   const skillInputs = page.getByPlaceholder("Skill name (e.g., JavaScript, Project Management)");
   await expect(skillInputs).toHaveCount(2);
   await skillInputs.nth(0).fill("Python");
@@ -27,7 +27,7 @@ export async function addCompleteEducation(
   page: Page,
   options: { scoreType: "gpa" | "percentage"; score: string } = { scoreType: "gpa", score: "8.5" }
 ) {
-  await page.getByRole("button", { name: "Education" }).click();
+  await page.getByRole("button", { name: "Education", exact: true }).click();
   await page.getByRole("button", { name: "Add Education" }).click();
   await page.getByPlaceholder("University Name").fill("ABC Public School");
   await page.getByPlaceholder("Bachelor's, Master's, etc.").fill("Class 12");
@@ -45,7 +45,7 @@ export async function addExperience(
   page: Page,
   options: { type: "Job" | "Internship"; start: string; end: string }
 ) {
-  await page.getByRole("button", { name: "Experience" }).click();
+  await page.getByRole("button", { name: "Experience", exact: true }).click();
   await page.getByRole("button", { name: "Add Experience" }).click();
   await page.getByRole("combobox").filter({ hasText: "Internship or Job" }).click();
   await page.getByRole("option", { name: options.type }).click();
@@ -58,7 +58,7 @@ export async function addExperience(
 }
 
 export async function addEmptyAward(page: Page) {
-  await page.getByRole("button", { name: "Awards" }).click();
+  await page.getByRole("button", { name: "Awards", exact: true }).click();
   await page.getByRole("button", { name: "Add Award" }).click();
   await page.getByPlaceholder("Award Title").fill("Best Project");
   await page.getByPlaceholder("Organization Name").fill("School");
