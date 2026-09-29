@@ -168,6 +168,22 @@ All colors MUST be HSL.
   box-shadow: none !important;
 }
 
+/* Phone screen only. Lay the preview out at paper width, then zoom it to the
+   preview column. Print and PDF stay unscaled: this is @media screen, and the
+   downloaded HTML is rendered on a desktop viewport. */
+@media screen and (max-width: 639px) {
+  #resume-preview {
+    container-type: inline-size;
+  }
+
+  #resume-preview > div {
+    width: 794px;
+    max-width: none;
+    overflow: visible;
+    zoom: calc(100cqw / 794px);
+  }
+}
+
 /* Hide page break lines during PDF generation */
 @media print {
   .preview-only {
