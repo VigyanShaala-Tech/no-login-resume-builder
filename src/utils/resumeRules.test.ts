@@ -159,14 +159,14 @@ describe("formatContactLine", () => {
       "vijayacads@gmail.com | +917028422265 | Pune India"
     );
     expect(formatContactLine(info, "classic")).toBe(
-      "vijayacads@gmail.com - +917028422265 - Pune India"
+      "vijayacads@gmail.com | +917028422265 | Pune India"
     );
   });
 
   it("puts website before LinkedIn on Classic and omits website on Shaded", () => {
     const withLinks = { ...info, website: "jordanhale.dev", linkedin: "linkedin.com/in/jordanhale" };
     expect(formatContactLine(withLinks, "classic")).toBe(
-      "vijayacads@gmail.com - +917028422265 - Pune India - jordanhale.dev - linkedin.com/in/jordanhale"
+      "vijayacads@gmail.com | +917028422265 | Pune India | jordanhale.dev | linkedin.com/in/jordanhale"
     );
     expect(formatContactLine(withLinks, "shaded")).toBe(
       "vijayacads@gmail.com | +917028422265 | linkedin.com/in/jordanhale | Pune India"

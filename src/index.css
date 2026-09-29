@@ -683,7 +683,6 @@ button[data-variant="outline"]:hover {
 .creative-section-header {
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #6d28d9;
   margin-bottom: 0;
@@ -907,7 +906,6 @@ button[data-variant="outline"]:hover {
 .academic-name {
   font-family: 'Times', 'Times New Roman', serif;
   font-weight: bold;
-  letter-spacing: 0.5px;
   text-align: left;
   margin-left: -1rem;
 }
@@ -1002,7 +1000,7 @@ button[data-variant="outline"]:hover {
 }
 
 .resumake-classic-contact::after {
-  content: " - ";
+  content: " | ";
   margin: 0 0.25rem;
 }
 
@@ -1072,7 +1070,7 @@ button[data-variant="outline"]:hover {
 
 .resumake-classic-item-content {
   margin-left: 0.25rem;
-  text-align: justify;
+  text-align: left;
 }
 
 .resumake-classic-skills-grid {
@@ -1236,7 +1234,7 @@ button[data-variant="outline"]:hover {
   width: 32%;
   background: #1b3a4b;
   color: #fff;
-  padding: 1.75rem 1.35rem 1.5rem;
+  padding: 1.75rem calc(1.35rem + 6px) 1.5rem 1.35rem;
 }
 
 .sidebar-main {
@@ -1274,7 +1272,6 @@ button[data-variant="outline"]:hover {
   margin: 0 0 0.6rem;
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
   line-height: 1;
   text-transform: uppercase;
 }

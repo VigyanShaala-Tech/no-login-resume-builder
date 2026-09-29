@@ -177,7 +177,7 @@ function buildResumakeClassic(data) {
       spacing: { after: SP.nameAfter },
     })
   );
-  const contactParts = joinFilled([p.email, p.phone, p.location, p.website, p.linkedin], " - ");
+  const contactParts = joinFilled([p.email, p.phone, p.location, p.website, p.linkedin], " | ");
   if (contactParts.length) {
     children.push(
       new Paragraph({

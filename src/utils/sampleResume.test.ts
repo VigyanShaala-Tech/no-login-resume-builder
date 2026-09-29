@@ -5,7 +5,7 @@ import { SAMPLE_RESUME } from "./sampleResume";
 describe("SAMPLE_RESUME", () => {
   it("fills Classic and Shaded contact lines without a trailing separator", () => {
     expect(formatContactLine(SAMPLE_RESUME.personalInfo, "classic")).toBe(
-      "jordan.hale@email.com - 555-014-8821 - Austin, TX - jordanhale.dev - linkedin.com/in/jordanhale"
+      "jordan.hale@email.com | 555-014-8821 | Austin, TX | jordanhale.dev | linkedin.com/in/jordanhale"
     );
     expect(formatContactLine(SAMPLE_RESUME.personalInfo, "shaded")).toBe(
       "jordan.hale@email.com | 555-014-8821 | linkedin.com/in/jordanhale | Austin, TX"

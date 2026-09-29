@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Mail, Phone, Globe, Linkedin, Calendar, User, GraduationCap, Briefcase, LayoutGrid, FolderKanban, Trophy, Award, BadgeCheck, BookOpen, type LucideIcon } from "lucide-react";
@@ -12,6 +13,69 @@ interface ResumePreviewProps {
 export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
   const formatDate = formatResumeDate;
   const namedSkills = resumeData.skills.filter((skill) => skill.name.trim());
+
+  const externalHref = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  };
+
+  const mailtoHref = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    return /^mailto:/i.test(trimmed) ? trimmed : `mailto:${trimmed}`;
+  };
+
+  const renderMaybeLink = (value: string, href?: string) =>
+    href ? <a href={href} className="text-inherit">{value}</a> : <span>{value}</span>;
+
+  const linkifyContactLine = (line: string) => {
+    const info = resumeData.personalInfo;
+    const candidates: { text: string; href: string }[] = [];
+    const email = info.email?.trim();
+    const emailHref = email ? mailtoHref(info.email ?? "") : undefined;
+    if (email && emailHref) candidates.push({ text: email, href: emailHref });
+    const website = info.website?.trim();
+    const websiteHref = website ? externalHref(info.website ?? "") : undefined;
+    if (website && websiteHref) candidates.push({ text: website, href: websiteHref });
+    const linkedin = info.linkedin?.trim();
+    const linkedinHref = linkedin ? externalHref(info.linkedin ?? "") : undefined;
+    if (linkedin && linkedinHref) candidates.push({ text: linkedin, href: linkedinHref });
+    if (!line || candidates.length === 0) return line;
+
+    const spans: { start: number; end: number; href: string; text: string }[] = [];
+    for (const candidate of candidates) {
+      let from = 0;
+      while (from < line.length) {
+        const start = line.indexOf(candidate.text, from);
+        if (start === -1) break;
+        spans.push({
+          start,
+          end: start + candidate.text.length,
+          href: candidate.href,
+          text: candidate.text,
+        });
+        from = start + candidate.text.length;
+      }
+    }
+    spans.sort((a, b) => a.start - b.start || b.end - a.end);
+
+    const nodes: ReactNode[] = [];
+    let pos = 0;
+    spans.forEach((span, index) => {
+      if (span.start < pos) return;
+      if (span.start > pos) nodes.push(line.slice(pos, span.start));
+      nodes.push(
+        <a key={`${span.start}-${index}`} href={span.href} className="text-inherit">
+          {span.text}
+        </a>
+      );
+      pos = span.end;
+    });
+    if (pos < line.length) nodes.push(line.slice(pos));
+    return nodes;
+  };
 
   const renderPairedSkills = (
     boxed: boolean,
@@ -32,19 +96,19 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     const p = resumeData.personalInfo;
     const color = tone === "onDark" ? "text-gray-200" : "text-gray-600";
     const link = tone === "onDark" ? "text-gray-200" : "text-blue-600";
-    const items: { key: string; Icon: typeof Mail; value: string; cls: string }[] = [];
-    if (p.email) items.push({ key: "email", Icon: Mail, value: p.email, cls: color });
+    const items: { key: string; Icon: typeof Mail; value: string; cls: string; href?: string }[] = [];
+    if (p.email) items.push({ key: "email", Icon: Mail, value: p.email, cls: color, href: mailtoHref(p.email) });
     if (p.phone) items.push({ key: "phone", Icon: Phone, value: p.phone, cls: color });
     if (p.location) items.push({ key: "location", Icon: MapPin, value: p.location, cls: color });
-    if (p.website) items.push({ key: "website", Icon: Globe, value: p.website, cls: link });
-    if (p.linkedin) items.push({ key: "linkedin", Icon: Linkedin, value: p.linkedin, cls: link });
+    if (p.website) items.push({ key: "website", Icon: Globe, value: p.website, cls: link, href: externalHref(p.website) });
+    if (p.linkedin) items.push({ key: "linkedin", Icon: Linkedin, value: p.linkedin, cls: link, href: externalHref(p.linkedin) });
     if (!items.length) return null;
     return (
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        {items.map(({ key, Icon, value, cls }) => (
+        {items.map(({ key, Icon, value, cls, href }) => (
           <div key={key} className={`flex items-center gap-1 ${cls}`}>
             <Icon className="w-3.5 h-3.5 shrink-0" />
-            <span>{value}</span>
+            {renderMaybeLink(value, href)}
           </div>
         ))}
       </div>
@@ -56,7 +120,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     if (!line) return null;
     return (
       <p className={`text-sm text-gray-600 ${align === "center" ? "text-center" : ""}`}>
-        {line}
+        {linkifyContactLine(line)}
       </p>
     );
   };
@@ -1546,7 +1610,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           {resumeData.personalInfo.fullName || "Your Name"}
         </h1>
         <div className="resumake-classic-contact">
-          {formatContactLine(resumeData.personalInfo, "classic")}
+          {linkifyContactLine(formatContactLine(resumeData.personalInfo, "classic"))}
         </div>
       </header>
 
@@ -1558,7 +1622,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           </h2>
           <hr className="border-0 h-[1px] bg-black my-1" />
           <div 
-            className="text-gray-700 leading-tight text-justify"
+            className="text-gray-700 leading-tight"
             dangerouslySetInnerHTML={{ __html: resumeData.personalInfo.summary }}
           />
         </section>
@@ -1802,7 +1866,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           </div>
           <div className="text-right text-black">
             <div className="text-right">
-              {formatContactLine(resumeData.personalInfo, "shaded")}
+              {linkifyContactLine(formatContactLine(resumeData.personalInfo, "shaded"))}
             </div>
           </div>
         </div>
@@ -1816,7 +1880,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           </h2>
           <div>
             <div 
-              className="text-black leading-relaxed text-justify -ml-2"
+              className="text-black leading-relaxed -ml-2"
               dangerouslySetInnerHTML={{ __html: resumeData.personalInfo.summary }}
             />
           </div>
@@ -1846,7 +1910,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 {exp.description && (
                   <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed text-justify ml-2"
+                      className="text-black leading-relaxed ml-2"
                       dangerouslySetInnerHTML={{ __html: exp.description }}
                     />
                   </div>
@@ -1894,7 +1958,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 {project.description && (
                   <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed text-justify ml-2"
+                      className="text-black leading-relaxed ml-2"
                       dangerouslySetInnerHTML={{ __html: project.description }}
                     />
                   </div>
@@ -1953,7 +2017,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 {achievement.description && (
                   <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed text-justify ml-2"
+                      className="text-black leading-relaxed ml-2"
                       dangerouslySetInnerHTML={{ __html: achievement.description }}
                     />
                   </div>
@@ -1984,7 +2048,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 {award.description && (
                   <div className="-mt-1">
                     <div 
-                      className="text-black leading-relaxed text-justify ml-2"
+                      className="text-black leading-relaxed ml-2"
                       dangerouslySetInnerHTML={{ __html: award.description }}
                     />
                   </div>
@@ -2059,12 +2123,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
   const renderSidebarTemplate = () => {
     const info = resumeData.personalInfo;
     const nameWords = (info.fullName || "Your Name").trim().split(/\s+/).filter(Boolean);
-    const contactItems: { key: string; Icon: LucideIcon; value: string }[] = [];
+    const contactItems: { key: string; Icon: LucideIcon; value: string; href?: string }[] = [];
     if (info.phone) contactItems.push({ key: "phone", Icon: Phone, value: info.phone });
-    if (info.email) contactItems.push({ key: "email", Icon: Mail, value: info.email });
+    if (info.email) contactItems.push({ key: "email", Icon: Mail, value: info.email, href: mailtoHref(info.email) });
     if (info.location) contactItems.push({ key: "location", Icon: MapPin, value: info.location });
-    if (info.website) contactItems.push({ key: "website", Icon: Globe, value: info.website });
-    if (info.linkedin) contactItems.push({ key: "linkedin", Icon: Linkedin, value: info.linkedin });
+    if (info.website) contactItems.push({ key: "website", Icon: Globe, value: info.website, href: externalHref(info.website) });
+    if (info.linkedin) contactItems.push({ key: "linkedin", Icon: Linkedin, value: info.linkedin, href: externalHref(info.linkedin) });
 
     const railHeading = (Icon: LucideIcon, label: string) => (
       <h2 className="sidebar-rail-heading">
@@ -2084,9 +2148,8 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
       </h2>
     );
 
-    return (
-      <div className="sidebar-resume">
-        <aside className="sidebar-rail" data-sidebar-rail>
+    const rail = (
+        <aside className="sidebar-rail order-1" data-sidebar-rail>
           {info.photo && (
             <div className="sidebar-photo" data-sidebar-photo>
               <img src={info.photo} alt="Profile" />
@@ -2097,10 +2160,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             <section className="sidebar-block">
               {railHeading(Phone, "Contact")}
               <ul className="sidebar-contact">
-                {contactItems.map(({ key, Icon, value }) => (
+                {contactItems.map(({ key, Icon, value, href }) => (
                   <li key={key}>
                     <Icon aria-hidden />
-                    <span>{value}</span>
+                    {renderMaybeLink(value, href)}
                   </li>
                 ))}
               </ul>
@@ -2142,8 +2205,10 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             </section>
           )}
         </aside>
+    );
 
-        <div className="sidebar-main">
+    const main = (
+        <div className="sidebar-main order-2">
           <h1 className="sidebar-name" data-sidebar-name>
             {nameWords.map((word, index) => (
               <span key={`${word}-${index}`}>{word}</span>
@@ -2286,6 +2351,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             </section>
           )}
         </div>
+    );
+
+    return (
+      <div className="sidebar-resume">
+        {main}
+        {rail}
       </div>
     );
   };

@@ -170,7 +170,7 @@ export function formatContactLine(
   if (variant === "shaded") {
     return joinFilled([info.email, info.phone, info.linkedin, info.location], " | ");
   }
-  return joinFilled([info.email, info.phone, info.location, info.website, info.linkedin], " - ");
+  return joinFilled([info.email, info.phone, info.location, info.website, info.linkedin], " | ");
 }
 
 /** Degree and school share the headline. Field and score stay on the next line. Empty parts are omitted. */

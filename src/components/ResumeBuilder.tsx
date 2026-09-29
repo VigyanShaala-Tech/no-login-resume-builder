@@ -178,26 +178,26 @@ export const ResumeBuilder = () => {
       {/* Header */}
       <header className="border-b bg-gradient-primary text-primary-foreground shadow-elegant">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
               <img 
                 src="/Logo2.jpg" 
                 alt="VigyanShaala" 
-                className="h-12 w-auto"
+                className="h-12 w-auto shrink-0"
               />
-              <div>
-                <h1 className="text-2xl font-bold">VigyanShaala's Free Professional CV Builder</h1>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold leading-tight">VigyanShaala's Free Professional CV Builder</h1>
                 <p className="text-primary-foreground/80 text-sm">
                   Create professional resumes and CVs instantly
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0">
             <Button 
               onClick={openChecklist} 
               size="sm" 
               variant="secondary"
-              className="flex items-center space-x-2"
+              className="shrink-0 max-lg:min-h-11"
               disabled={isGeneratingPDF || isGeneratingWord}
               data-testid="header-download-pdf"
             >
@@ -206,13 +206,13 @@ export const ResumeBuilder = () => {
               ) : (
                 <Download className="h-4 w-4" />
               )}
-              <span>{isGeneratingPDF ? "Generating..." : "Download PDF"}</span>
+              <span className="whitespace-nowrap">{isGeneratingPDF ? "Generating..." : "Download PDF"}</span>
             </Button>
             <Button 
               onClick={openChecklist} 
               size="sm" 
               variant="secondary"
-              className="flex items-center space-x-2"
+              className="shrink-0 max-lg:min-h-11"
               disabled={isGeneratingPDF || isGeneratingWord}
               data-testid="header-download-word"
             >
@@ -221,7 +221,7 @@ export const ResumeBuilder = () => {
               ) : (
                 <FileText className="h-4 w-4" />
               )}
-              <span>{isGeneratingWord ? "Generating..." : "Download Word"}</span>
+              <span className="whitespace-nowrap">{isGeneratingWord ? "Generating..." : "Download Word"}</span>
             </Button>
           </div>
           </div>
