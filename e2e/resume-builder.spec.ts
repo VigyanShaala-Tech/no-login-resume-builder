@@ -124,10 +124,10 @@ test("home shows every live template including Sidebar", async ({ page }) => {
   }
 });
 
-test("classic preview joins contact with dashes and hides Skills until a name is entered", async ({ page }) => {
+test("classic preview joins contact with pipes and hides Skills until a name is entered", async ({ page }) => {
   await fillPersonal(page);
   const preview = page.locator("#resume-preview");
-  await expect(preview).toContainText("jane@example.com - 9876543210 - Bengaluru");
+  await expect(preview).toContainText("jane@example.com | 9876543210 | Bengaluru");
   await expect(preview.getByRole("heading", { name: "Skills", exact: true })).toHaveCount(0);
 
   await fillTwoSkills(page);
