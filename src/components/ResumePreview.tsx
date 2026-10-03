@@ -157,29 +157,29 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     const lines = educationEntryLines(edu);
     const dateText = formatDateRange(edu.startDate, edu.endDate, edu.current, options.dateSeparator);
     return (
-      <>
-        <div className="flex justify-between items-start gap-4">
-          <h3 className={`min-w-0 ${options.degreeClass}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className={options.degreeClass}>
             {lines.degree}{lines.place && (
               <span className={`font-normal ${options.placeClass}`}>
                 {lines.degree ? ", " : ""}{lines.place}
               </span>
             )}
           </h3>
-          <div className={`shrink-0 text-right ${options.dateClass}`}>
-            <div className="flex items-center justify-end gap-1">
-              {options.showCalendar && <Calendar className={options.calendarClass || "w-3 h-3"} />}
-              <span>{dateText}</span>
-            </div>
-          </div>
+          {lines.field && <p className={`italic text-sm ${options.fieldClass}`}>{lines.field}</p>}
         </div>
-        {(lines.field || lines.score) && (
-          <div className="flex justify-between items-start gap-4">
-            <p className={`min-w-0 italic text-sm ${options.fieldClass}`}>{lines.field}</p>
-            {lines.score && <span className={`shrink-0 text-sm ${options.scoreClass}`}>{lines.score}</span>}
+        {(dateText || lines.score) && (
+          <div className="shrink-0 text-right">
+            {dateText && (
+              <div className={`flex items-center justify-end gap-1 ${options.dateClass}`}>
+                {options.showCalendar && <Calendar className={options.calendarClass || "w-3 h-3"} />}
+                <span>{dateText}</span>
+              </div>
+            )}
+            {lines.score && <div className={`text-sm ${options.scoreClass}`}>{lines.score}</div>}
           </div>
         )}
-      </>
+      </div>
     );
   };
 

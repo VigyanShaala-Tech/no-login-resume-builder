@@ -56,6 +56,36 @@ describe("Word contact links", () => {
     expect(sidebar.documentXml).toContain('w:val="7DD3FC"');
   });
 
+  it("puts the education date and GPA in the right column", async () => {
+    const data = {
+      ...resume,
+      education: [{
+        id: "edu-1",
+        school: "Sri Chaitanya Junior College",
+        location: "Hyderabad, Telangana",
+        degree: "Intermediate (MPC/BiPC)",
+        field: "Science",
+        gpa: "9.2",
+        scoreType: "gpa",
+        startDate: "2020-06-01",
+        endDate: "2022-03-01",
+        current: false,
+      }],
+    };
+    const { documentXml, text } = await wordParts("modern", data);
+    expect(text).toContain("Intermediate (MPC/BiPC)");
+    expect(text).toContain("Sri Chaitanya Junior College, Hyderabad, Telangana");
+    expect(text).toContain("Science");
+    expect(text).toContain("GPA: 9.2/10");
+    expect(text).toContain("Jun 2020 - Mar 2022");
+    expect(documentXml).toContain("<w:tbl>");
+    const cells = documentXml.split("<w:tc>");
+    const rightCell = cells[cells.length - 1];
+    expect(rightCell).toContain("Jun 2020 - Mar 2022");
+    expect(rightCell).toContain("GPA: 9.2/10");
+    expect(rightCell).not.toContain("Sri Chaitanya");
+  });
+
   it("omits Website when that field is empty", async () => {
     const data = {
       ...resume,

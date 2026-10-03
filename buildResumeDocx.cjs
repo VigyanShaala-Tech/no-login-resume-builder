@@ -103,34 +103,68 @@ const EDUCATION_RIGHT_TAB = 9360;
 
 function educationParagraphs(edu, dateStr, useTimes) {
   const place = [edu.school, edu.location].filter((part) => part && String(part).trim()).join(", ");
+  const degree = edu.degree ? String(edu.degree).trim() : "";
   const field = edu.field ? String(edu.field).trim() : "";
   const score = formatEducationScore(edu);
   const run = (opts) => new TextRun(useTimes ? { ...opts, font: FONT.times } : opts);
-  const tabStops = [{ type: TabStopType.RIGHT, position: EDUCATION_RIGHT_TAB }];
-  const paragraphs = [
+  const noLine = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+  const borders = { top: noLine, bottom: noLine, left: noLine, right: noLine };
+  const left = [
     new Paragraph({
-      tabStops,
       children: [
-        run({ text: edu.degree ? String(edu.degree).trim() : "", bold: true, size: SZ.body, color: C.dark }),
-        ...(place ? [run({ text: (edu.degree && String(edu.degree).trim() ? ", " : "") + place, size: SZ.body, color: C.dark })] : []),
-        run({ text: "\t" + dateStr, size: SZ.body, color: C.light }),
+        run({ text: degree, bold: true, size: SZ.body, color: C.dark }),
+        ...(place ? [run({ text: (degree ? ", " : "") + place, size: SZ.body, color: C.dark })] : []),
       ],
-      spacing: { after: field || score ? 40 : SP.blockAfter },
+      spacing: { after: field ? 40 : SP.blockAfter },
     }),
   ];
-  if (field || score) {
-    paragraphs.push(
-      new Paragraph({
-        tabStops,
-        children: [
-          ...(field ? [run({ text: field, italics: true, size: SZ.skillLevel, color: C.med })] : []),
-          ...(score ? [run({ text: "\t" + score, size: SZ.skillLevel, color: C.light })] : []),
-        ],
-        spacing: { after: SP.blockAfter },
-      })
-    );
+  if (field) {
+    left.push(new Paragraph({
+      children: [run({ text: field, italics: true, size: SZ.skillLevel, color: C.med })],
+      spacing: { after: SP.blockAfter },
+    }));
   }
-  return paragraphs;
+  const right = [
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      children: [run({ text: dateStr || "", size: SZ.body, color: C.light })],
+      spacing: { after: score ? 40 : SP.blockAfter },
+    }),
+  ];
+  if (score) {
+    right.push(new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      children: [run({ text: score, size: SZ.skillLevel, color: C.light })],
+      spacing: { after: SP.blockAfter },
+    }));
+  }
+  return [
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: { ...borders, insideHorizontal: noLine, insideVertical: noLine },
+      rows: [
+        new TableRow({
+          cantSplit: true,
+          children: [
+            new TableCell({
+              width: { size: 70, type: WidthType.PERCENTAGE },
+              borders,
+              verticalAlign: VerticalAlign.TOP,
+              margins: { top: 0, bottom: 0, left: 0, right: 120 },
+              children: left,
+            }),
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              borders,
+              verticalAlign: VerticalAlign.TOP,
+              margins: { top: 0, bottom: 0, left: 0, right: 0 },
+              children: right,
+            }),
+          ],
+        }),
+      ],
+    }),
+  ];
 }
 
 function formatDate(dateString) {
