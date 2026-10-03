@@ -157,6 +157,9 @@ export function formatDateRange(
   return joinFilled([formatResumeDate(start), current ? "Present" : formatResumeDate(end)], separator);
 }
 
+export const CONTACT_WEBSITE_LABEL = "Website";
+export const CONTACT_LINKEDIN_LABEL = "LinkedIn";
+
 export function formatContactLine(
   info: {
     email?: string;
@@ -167,10 +170,12 @@ export function formatContactLine(
   },
   variant: "classic" | "shaded" = "classic"
 ): string {
+  const website = info.website?.trim() ? CONTACT_WEBSITE_LABEL : "";
+  const linkedin = info.linkedin?.trim() ? CONTACT_LINKEDIN_LABEL : "";
   if (variant === "shaded") {
-    return joinFilled([info.email, info.phone, info.linkedin, info.location], " | ");
+    return joinFilled([info.email, info.phone, linkedin, website, info.location], " | ");
   }
-  return joinFilled([info.email, info.phone, info.location, info.website, info.linkedin], " | ");
+  return joinFilled([info.email, info.phone, info.location, website, linkedin], " | ");
 }
 
 /** Degree and school share the headline. Field and score stay on the next line. Empty parts are omitted. */

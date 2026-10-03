@@ -5,7 +5,7 @@
  * modern, professional, minimal, classic, creative, executive.
  * Photos are omitted in Word except sidebar, which embeds the cropped square.
  */
-const { Document, Packer, Paragraph, TextRun, ImageRun, BorderStyle, AlignmentType, Table, TableRow, TableCell, WidthType, TabStopType, VerticalAlign } = require("docx");
+const { Document, Packer, Paragraph, TextRun, ImageRun, ExternalHyperlink, BorderStyle, AlignmentType, Table, TableRow, TableCell, WidthType, TabStopType, VerticalAlign } = require("docx");
 
 // PDF-aligned spacing (twips). 1pt=20 twips; 0.85rem~10pt=200, 0.25rem~3pt=60, 0.5rem~6pt=120
 const SP = {
@@ -36,6 +36,56 @@ function stripHtml(html) {
 
 function joinFilled(parts, separator) {
   return parts.map((part) => (part && String(part).trim()) || "").filter(Boolean).join(separator);
+}
+
+const LINK_LABEL = { website: "Website", linkedin: "LinkedIn" };
+const LINK_BLUE = "1D4ED8";
+
+function externalHref(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return "";
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function contactPieces(p, order) {
+  const website = p.website && String(p.website).trim();
+  const linkedin = p.linkedin && String(p.linkedin).trim();
+  const bits = {
+    email: p.email && String(p.email).trim(),
+    phone: p.phone && String(p.phone).trim(),
+    location: p.location && String(p.location).trim(),
+    website: website ? { label: LINK_LABEL.website, href: externalHref(website) } : "",
+    linkedin: linkedin ? { label: LINK_LABEL.linkedin, href: externalHref(linkedin) } : "",
+  };
+  return order.map((key) => bits[key]).filter(Boolean);
+}
+
+function webLink(label, href, opts) {
+  return new ExternalHyperlink({
+    link: href,
+    children: [
+      new TextRun({
+        text: label,
+        size: opts.size,
+        color: opts.linkColor || LINK_BLUE,
+        font: opts.font,
+        underline: { type: "single", color: opts.linkColor || LINK_BLUE },
+      }),
+    ],
+  });
+}
+
+function contactRuns(pieces, opts) {
+  const children = [];
+  pieces.forEach((part, index) => {
+    if (index > 0) {
+      children.push(new TextRun({ text: " | ", size: opts.size, color: opts.color, font: opts.font }));
+    }
+    if (part && part.href) children.push(webLink(part.label, part.href, opts));
+    else children.push(new TextRun({ text: String(part), size: opts.size, color: opts.color, font: opts.font }));
+  });
+  return children;
 }
 
 function formatEducationScore(edu) {
@@ -177,11 +227,11 @@ function buildResumakeClassic(data) {
       spacing: { after: SP.nameAfter },
     })
   );
-  const contactParts = joinFilled([p.email, p.phone, p.location, p.website, p.linkedin], " | ");
-  if (contactParts.length) {
+  const contactPiecesClassic = contactPieces(p, ["email", "phone", "location", "website", "linkedin"]);
+  if (contactPiecesClassic.length) {
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: contactParts, size: SZ.body, color: C.med })],
+        children: contactRuns(contactPiecesClassic, { size: SZ.body, color: C.med, linkColor: LINK_BLUE }),
         alignment: AlignmentType.CENTER,
         spacing: { after: SP.contactAfter },
       })
@@ -390,13 +440,14 @@ function buildResumakeClassicSingle(data) {
   const children = [];
   const p = data.personalInfo;
 
-  const contactParts = joinFilled([p.email, p.phone, p.linkedin, p.location], " | ");
+  const shadedContact = contactPieces(p, ["email", "phone", "linkedin", "website", "location"]);
   const tr = (opts) => ({ ...opts, font: FONT.times });
   children.push(
     new Paragraph({
       children: [
         new TextRun(tr({ text: p.fullName || "Your Name", bold: true, size: SZ.nameSingle })),
-        new TextRun(tr({ text: "\t\t\t" + contactParts, size: SZ.body, color: C.med })),
+        new TextRun(tr({ text: "\t\t\t", size: SZ.body, color: C.med })),
+        ...contactRuns(shadedContact, { size: SZ.body, color: C.med, font: FONT.times, linkColor: LINK_BLUE }),
       ],
       spacing: { after: SP.contactAfter },
     })
@@ -857,11 +908,13 @@ function buildThemedResume(data, theme) {
     })
   );
 
+  const linkColor = theme.linkColor || LINK_BLUE;
+  const runOpts = { size: SZ.body, color: C.med, linkColor };
   if (theme.contact === "stacked") {
-    [p.location, p.phone, p.email, p.website, p.linkedin].filter((part) => part && String(part).trim()).forEach((line) => {
+    contactPieces(p, ["location", "phone", "email", "website", "linkedin"]).forEach((part) => {
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: line, size: SZ.body, color: C.med })],
+          children: part && part.href ? [webLink(part.label, part.href, runOpts)] : [new TextRun({ text: String(part), size: SZ.body, color: C.med })],
           alignment: nameAlign,
           spacing: { after: 20 },
         })
@@ -869,14 +922,14 @@ function buildThemedResume(data, theme) {
     });
     children.push(new Paragraph({ text: "", spacing: { after: SP.contactAfter } }));
   } else {
-    const contact =
+    const pieces =
       theme.contact === "shaded"
-        ? joinFilled([p.email, p.phone, p.linkedin, p.location], " | ")
-        : joinFilled([p.email, p.phone, p.location, p.website, p.linkedin], theme.contactSep || " | ");
-    if (contact) {
+        ? contactPieces(p, ["email", "phone", "linkedin", "website", "location"])
+        : contactPieces(p, ["email", "phone", "location", "website", "linkedin"]);
+    if (pieces.length) {
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: contact, size: SZ.body, color: C.med })],
+          children: contactRuns(pieces, runOpts),
           alignment: nameAlign,
           spacing: { after: SP.contactAfter },
         })
@@ -942,6 +995,7 @@ function buildCreative(data) {
   return buildThemedResume(data, {
     color: "0D9488",
     nameSize: 56,
+    linkColor: "6D28D9",
     skills: "inline",
     experience: "position-first",
     labels: { ...DEFAULT_LABELS, skills: "Skills & Expertise", projects: "Creative Projects" },
@@ -1031,15 +1085,27 @@ function buildSidebar(data) {
   }
 
   const contact = [
-    ["Phone", p.phone],
-    ["Email", p.email],
-    ["Location", p.location],
-    ["Website", p.website],
-    ["LinkedIn", p.linkedin],
+    ["Phone", p.phone, false],
+    ["Email", p.email, false],
+    ["Location", p.location, false],
+    [LINK_LABEL.website, p.website, true],
+    [LINK_LABEL.linkedin, p.linkedin, true],
   ].filter(([, value]) => value && String(value).trim());
   if (contact.length) {
     rail.push(sidebarRailParagraph("CONTACT", { bold: true, size: 20, before: 80, after: 80 }));
-    contact.forEach(([, value]) => rail.push(sidebarRailParagraph(String(value).trim(), { size: 18, after: 40 })));
+    contact.forEach(([label, value, isLink]) => {
+      const text = String(value).trim();
+      if (isLink) {
+        rail.push(
+          new Paragraph({
+            spacing: { before: 0, after: 40 },
+            children: [webLink(label, externalHref(text), { size: 18, linkColor: "7DD3FC", font: "Calibri" })],
+          })
+        );
+      } else {
+        rail.push(sidebarRailParagraph(text, { size: 18, after: 40 }));
+      }
+    });
   }
 
   if (data.education && data.education.length) {

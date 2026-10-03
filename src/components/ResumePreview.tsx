@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Mail, Phone, Globe, Linkedin, Calendar, User, GraduationCap, Briefcase, LayoutGrid, FolderKanban, Trophy, Award, BadgeCheck, BookOpen, type LucideIcon } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
-import { educationEntryLines, formatContactLine, formatDateRange, formatPlace, formatResumeDate } from "@/utils/resumeRules";
+import { CONTACT_LINKEDIN_LABEL, CONTACT_WEBSITE_LABEL, educationEntryLines, formatContactLine, formatDateRange, formatPlace, formatResumeDate } from "@/utils/resumeRules";
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -30,21 +30,21 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
   const renderMaybeLink = (value: string, href?: string) =>
     href ? <a href={href} className="text-inherit">{value}</a> : <span>{value}</span>;
 
-  const linkifyContactLine = (line: string) => {
+  const linkifyContactLine = (line: string, linkClass = "text-blue-700") => {
     const info = resumeData.personalInfo;
-    const candidates: { text: string; href: string }[] = [];
+    const candidates: { text: string; href: string; icon?: LucideIcon }[] = [];
     const email = info.email?.trim();
     const emailHref = email ? mailtoHref(info.email ?? "") : undefined;
     if (email && emailHref) candidates.push({ text: email, href: emailHref });
     const website = info.website?.trim();
     const websiteHref = website ? externalHref(info.website ?? "") : undefined;
-    if (website && websiteHref) candidates.push({ text: website, href: websiteHref });
+    if (website && websiteHref) candidates.push({ text: CONTACT_WEBSITE_LABEL, href: websiteHref, icon: Globe });
     const linkedin = info.linkedin?.trim();
     const linkedinHref = linkedin ? externalHref(info.linkedin ?? "") : undefined;
-    if (linkedin && linkedinHref) candidates.push({ text: linkedin, href: linkedinHref });
+    if (linkedin && linkedinHref) candidates.push({ text: CONTACT_LINKEDIN_LABEL, href: linkedinHref, icon: Linkedin });
     if (!line || candidates.length === 0) return line;
 
-    const spans: { start: number; end: number; href: string; text: string }[] = [];
+    const spans: { start: number; end: number; href: string; text: string; icon?: LucideIcon }[] = [];
     for (const candidate of candidates) {
       let from = 0;
       while (from < line.length) {
@@ -55,6 +55,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
           end: start + candidate.text.length,
           href: candidate.href,
           text: candidate.text,
+          icon: candidate.icon,
         });
         from = start + candidate.text.length;
       }
@@ -66,8 +67,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     spans.forEach((span, index) => {
       if (span.start < pos) return;
       if (span.start > pos) nodes.push(line.slice(pos, span.start));
+      const Icon = span.icon;
       nodes.push(
-        <a key={`${span.start}-${index}`} href={span.href} className="text-inherit">
+        <a
+          key={`${span.start}-${index}`}
+          href={span.href}
+          className={Icon ? `inline-flex items-center gap-1 underline ${linkClass}` : "text-inherit"}
+        >
+          {Icon ? <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden /> : null}
           {span.text}
         </a>
       );
@@ -92,23 +99,32 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     </div>
   );
 
-  const renderIconContactRow = (tone: "muted" | "onDark" = "muted") => {
+  const renderIconContactRow = (tone: "muted" | "creative" | "onDark" = "muted") => {
     const p = resumeData.personalInfo;
     const color = tone === "onDark" ? "text-gray-200" : "text-gray-600";
-    const link = tone === "onDark" ? "text-gray-200" : "text-blue-600";
-    const items: { key: string; Icon: typeof Mail; value: string; cls: string; href?: string }[] = [];
+    const link = tone === "onDark" ? "text-sky-200" : tone === "creative" ? "text-violet-700" : "text-blue-700";
+    const items: { key: string; Icon: typeof Mail; value: string; cls: string; href?: string; web?: boolean }[] = [];
     if (p.email) items.push({ key: "email", Icon: Mail, value: p.email, cls: color, href: mailtoHref(p.email) });
     if (p.phone) items.push({ key: "phone", Icon: Phone, value: p.phone, cls: color });
     if (p.location) items.push({ key: "location", Icon: MapPin, value: p.location, cls: color });
-    if (p.website) items.push({ key: "website", Icon: Globe, value: p.website, cls: link, href: externalHref(p.website) });
-    if (p.linkedin) items.push({ key: "linkedin", Icon: Linkedin, value: p.linkedin, cls: link, href: externalHref(p.linkedin) });
+    if (p.website) items.push({ key: "website", Icon: Globe, value: CONTACT_WEBSITE_LABEL, cls: link, href: externalHref(p.website), web: true });
+    if (p.linkedin) items.push({ key: "linkedin", Icon: Linkedin, value: CONTACT_LINKEDIN_LABEL, cls: link, href: externalHref(p.linkedin), web: true });
     if (!items.length) return null;
     return (
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        {items.map(({ key, Icon, value, cls, href }) => (
+        {items.map(({ key, Icon, value, cls, href, web }) => (
           <div key={key} className={`flex items-center gap-1 ${cls}`}>
-            <Icon className="w-3.5 h-3.5 shrink-0" />
-            {renderMaybeLink(value, href)}
+            {web && href ? (
+              <a href={href} className="inline-flex items-center gap-1 underline">
+                <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                {value}
+              </a>
+            ) : (
+              <>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                {renderMaybeLink(value, href)}
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -1136,7 +1152,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h1>{resumeData.personalInfo.fullName || "Your Name"}</h1>
-            <div className="creative-contact">{renderIconContactRow()}</div>
+            <div className="creative-contact">{renderIconContactRow("creative")}</div>
           </div>
           {resumeData.personalInfo.photo && (
             <div className="creative-photo">
@@ -2123,12 +2139,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
   const renderSidebarTemplate = () => {
     const info = resumeData.personalInfo;
     const nameWords = (info.fullName || "Your Name").trim().split(/\s+/).filter(Boolean);
-    const contactItems: { key: string; Icon: LucideIcon; value: string; href?: string }[] = [];
+    const contactItems: { key: string; Icon: LucideIcon; value: string; href?: string; web?: boolean }[] = [];
     if (info.phone) contactItems.push({ key: "phone", Icon: Phone, value: info.phone });
     if (info.email) contactItems.push({ key: "email", Icon: Mail, value: info.email, href: mailtoHref(info.email) });
     if (info.location) contactItems.push({ key: "location", Icon: MapPin, value: info.location });
-    if (info.website) contactItems.push({ key: "website", Icon: Globe, value: info.website, href: externalHref(info.website) });
-    if (info.linkedin) contactItems.push({ key: "linkedin", Icon: Linkedin, value: info.linkedin, href: externalHref(info.linkedin) });
+    if (info.website) contactItems.push({ key: "website", Icon: Globe, value: CONTACT_WEBSITE_LABEL, href: externalHref(info.website), web: true });
+    if (info.linkedin) contactItems.push({ key: "linkedin", Icon: Linkedin, value: CONTACT_LINKEDIN_LABEL, href: externalHref(info.linkedin), web: true });
 
     const railHeading = (Icon: LucideIcon, label: string) => (
       <h2 className="sidebar-rail-heading">
@@ -2160,10 +2176,19 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
             <section className="sidebar-block">
               {railHeading(Phone, "Contact")}
               <ul className="sidebar-contact">
-                {contactItems.map(({ key, Icon, value, href }) => (
+                {contactItems.map(({ key, Icon, value, href, web }) => (
                   <li key={key}>
-                    <Icon aria-hidden />
-                    {renderMaybeLink(value, href)}
+                    {web && href ? (
+                      <a href={href} className="inline-flex items-center gap-1 text-sky-200 underline">
+                        <Icon aria-hidden />
+                        {value}
+                      </a>
+                    ) : (
+                      <>
+                        <Icon aria-hidden />
+                        {renderMaybeLink(value, href)}
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
