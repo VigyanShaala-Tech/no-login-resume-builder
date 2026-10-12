@@ -9,6 +9,7 @@ import { ResumePreviewFrame } from "./ResumePreviewFrame";
 import { TemplateSelector } from "./TemplateSelector";
 import { DownloadChecklistDialog } from "./DownloadChecklistDialog";
 import { generatePDF, generateWord } from "@/utils/pdfGenerator";
+import { safeDownloadFilename, STORAGE_WAIT_MS, withTimeout, type ReadyDownload } from "@/utils/saveFile";
 import { storeResumeData } from "@/utils/resumeStorage";
 import {
   applyTitleCaseName,
@@ -64,6 +65,7 @@ export const ResumeBuilder = () => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
   const [checklistOpen, setChecklistOpen] = useState(false);
+  const [readyFile, setReadyFile] = useState<ReadyDownload | null>(null);
   const { toast } = useToast();
 
   const sections = [
@@ -92,6 +94,7 @@ export const ResumeBuilder = () => {
       });
       return;
     }
+    setReadyFile(null);
     setChecklistOpen(true);
   };
 
@@ -108,10 +111,15 @@ export const ResumeBuilder = () => {
     }
     setIsGeneratingPDF(true);
     try {
-      const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
-      
-      // Store resume data to Supabase
-      const { error: storageError } = await storeResumeData(resumeData, selectedTemplate);
+      const filename = safeDownloadFilename(resumeData.personalInfo.fullName, "pdf");
+
+      let storageError: unknown = null;
+      try {
+        const stored = await withTimeout(storeResumeData(resumeData, selectedTemplate), STORAGE_WAIT_MS);
+        storageError = stored.error;
+      } catch {
+        storageError = "timeout";
+      }
       
       if (storageError) {
         console.error('Failed to store resume data:', storageError);
@@ -125,9 +133,7 @@ export const ResumeBuilder = () => {
         console.log('Resume data stored successfully to Supabase');
       }
       
-      // Generate and download PDF
-      await generatePDF('resume-preview', filename);
-      setChecklistOpen(false);
+      setReadyFile(await generatePDF("resume-preview", filename));
       
     } catch (error) {
       toast({
@@ -152,12 +158,11 @@ export const ResumeBuilder = () => {
     }
     setIsGeneratingWord(true);
     try {
-      const filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume.docx`;
-      await generateWord(resumeData, selectedTemplate, filename);
-      setChecklistOpen(false);
+      const filename = safeDownloadFilename(resumeData.personalInfo.fullName, "docx");
+      setReadyFile(await generateWord(resumeData, selectedTemplate, filename));
       toast({
-        title: "Download complete",
-        description: "Your resume has been downloaded as a Word document.",
+        title: "File ready",
+        description: "If the Word file did not save, tap the save button in the checklist.",
       });
     } catch {
       toast({
@@ -303,6 +308,7 @@ export const ResumeBuilder = () => {
         onDownloadWord={handleDownloadWord}
         isGeneratingPDF={isGeneratingPDF}
         isGeneratingWord={isGeneratingWord}
+        readyFile={readyFile}
       />
     </div>
   );

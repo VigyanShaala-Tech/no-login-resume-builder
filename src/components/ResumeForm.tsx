@@ -678,15 +678,15 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
       </CardHeader>
       <CardContent className="space-y-4">
         {resumeData.skills.map((skill) => (
-          <div key={skill.id} className="flex items-center space-x-4 p-3 border rounded-lg">
-            <div className="flex-1">
+          <div key={skill.id} className="flex flex-col gap-2 border rounded-lg p-3 sm:flex-row sm:items-center">
+            <div className="min-w-0 w-full sm:flex-1">
               <Input
                 value={skill.name}
                 onChange={(e) => updateSkill(skill.id, "name", e.target.value)}
                 placeholder="Skill name (e.g., JavaScript, Project Management)"
               />
             </div>
-            <div className="w-40">
+            <div className="w-full sm:w-40 sm:shrink-0">
               <Select
                 value={skill.level}
                 onValueChange={(value) => updateSkill(skill.id, "level", value)}

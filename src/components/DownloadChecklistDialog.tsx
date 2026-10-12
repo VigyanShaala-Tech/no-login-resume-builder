@@ -24,6 +24,7 @@ interface DownloadChecklistDialogProps {
   onDownloadWord: () => void;
   isGeneratingPDF: boolean;
   isGeneratingWord: boolean;
+  readyFile?: { url: string; filename: string } | null;
 }
 
 const emptyAnswers = (): ChecklistAnswer[] => DOWNLOAD_CHECKLIST.map(() => "");
@@ -35,6 +36,7 @@ export const DownloadChecklistDialog = ({
   onDownloadWord,
   isGeneratingPDF,
   isGeneratingWord,
+  readyFile = null,
 }: DownloadChecklistDialogProps) => {
   const [answers, setAnswers] = useState<ChecklistAnswer[]>(emptyAnswers);
 
@@ -47,14 +49,14 @@ export const DownloadChecklistDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-white text-gray-900">
-        <DialogHeader>
+      <DialogContent className="!top-4 !flex !h-auto !max-h-[85dvh] !w-[calc(100%-1.5rem)] !translate-y-0 !flex-col !gap-3 overflow-hidden bg-white p-4 text-gray-900 sm:p-6">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="text-gray-900">Have you re-read these points?</DialogTitle>
           <DialogDescription className="text-gray-600">
             Mark Yes or Not Applicable for every point. Download stays disabled if any point is No or unanswered.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <div className="min-h-0 max-h-[60dvh] space-y-4 overflow-y-auto py-2">
           {DOWNLOAD_CHECKLIST.map((item, index) => (
             <div key={item} className="rounded-md border border-gray-200 p-3">
               <p className="mb-3 text-sm font-medium text-gray-900">
@@ -93,7 +95,17 @@ export const DownloadChecklistDialog = ({
             </div>
           ))}
         </div>
-        <DialogFooter className="gap-2 sm:justify-end">
+        {readyFile && (
+          <a
+            data-testid="save-ready-file"
+            href={readyFile.url}
+            download={readyFile.filename}
+            className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md bg-primary px-4 text-center text-sm font-medium text-primary-foreground"
+          >
+            Tap to save {readyFile.filename}
+          </a>
+        )}
+        <DialogFooter className="shrink-0 gap-2 sm:justify-end">
           <Button
             type="button"
             variant="secondary"

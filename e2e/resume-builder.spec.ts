@@ -98,6 +98,8 @@ test("smoke: Download PDF and Word produce files", async ({ page }) => {
   await openDownloadChecklist(page);
   await completeChecklist(page);
   await downloadFromChecklist(page, "pdf");
+  await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 
   await openDownloadChecklist(page);
   await completeChecklist(page);
