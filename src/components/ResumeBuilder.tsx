@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Download, FileText, User, Briefcase, GraduationCap, Star, Loader2 } from "lucide-react";
 import { ResumeForm } from "./ResumeForm";
 import { ResumePreview } from "./ResumePreview";
+import { ResumePreviewFrame } from "./ResumePreviewFrame";
 import { TemplateSelector } from "./TemplateSelector";
 import { DownloadChecklistDialog } from "./DownloadChecklistDialog";
 import { generatePDF, generateWord } from "@/utils/pdfGenerator";
@@ -240,9 +241,9 @@ export const ResumeBuilder = () => {
         </Card>
 
         {/* Main Builder Interface */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid min-w-0 grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form Section */}
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             {/* Section Navigation */}
             <Card className="shadow-card">
               <CardContent className="p-4">
@@ -276,18 +277,20 @@ export const ResumeBuilder = () => {
           </div>
 
           {/* Preview Section */}
-          <div className="lg:sticky lg:top-8 lg:h-fit">
-            <Card className="shadow-elegant bg-[#2c4869] text-white">
+          <div className="min-w-0 lg:sticky lg:top-8 lg:h-fit">
+            <Card className="min-w-0 overflow-hidden shadow-elegant bg-[#2c4869] text-white">
               <CardHeader>
                 <CardTitle className="text-white">Preview</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div id="resume-preview">
-                  <ResumePreview 
-                    resumeData={resumeData}
-                    template={selectedTemplate}
-                  />
-                </div>
+              <CardContent className="min-w-0">
+                <ResumePreviewFrame>
+                  <div id="resume-preview">
+                    <ResumePreview 
+                      resumeData={resumeData}
+                      template={selectedTemplate}
+                    />
+                  </div>
+                </ResumePreviewFrame>
               </CardContent>
             </Card>
           </div>
