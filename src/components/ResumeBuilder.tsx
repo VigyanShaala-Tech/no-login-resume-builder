@@ -8,6 +8,8 @@ import { ResumePreview } from "./ResumePreview";
 import { ResumePreviewFrame } from "./ResumePreviewFrame";
 import { TemplateSelector } from "./TemplateSelector";
 import { DownloadChecklistDialog } from "./DownloadChecklistDialog";
+import { MyCvsDialog, SaveVersionDialog } from "./ResumeAccountDialogs";
+import { useResumeAccount } from "@/hooks/useResumeAccount";
 import { generatePDF, generateWord } from "@/utils/pdfGenerator";
 import { safeDownloadFilename, STORAGE_WAIT_MS, withTimeout, type ReadyDownload } from "@/utils/saveFile";
 import { storeResumeData } from "@/utils/resumeStorage";
@@ -17,13 +19,27 @@ import {
   type ResumeData,
 } from "@/utils/resumeRules";
 import { SAMPLE_RESUME } from "@/utils/sampleResume";
+import {
+  createBlankResume,
+  isSampleMode,
+  readDraft,
+  resumeSnapshot,
+  type EditorDraft,
+} from "@/utils/resumeAccount";
 import { isTemplateId } from "@/utils/templates";
 
-function resumeFromUrl(): ResumeData {
-  if (typeof window === "undefined") return initialResumeData;
-  return new URLSearchParams(window.location.search).get("sample") === "1"
-    ? SAMPLE_RESUME
-    : initialResumeData;
+function editorStart(): EditorDraft {
+  const templateId = templateFromUrl();
+  if (isSampleMode()) {
+    return { resumeData: SAMPLE_RESUME, templateId, resumeId: null, savedSnapshot: null };
+  }
+  const blank = createBlankResume();
+  return readDraft() ?? {
+    resumeData: blank,
+    templateId,
+    resumeId: null,
+    savedSnapshot: resumeSnapshot(blank, templateId),
+  };
 }
 
 function templateFromUrl(): string {
@@ -34,33 +50,10 @@ function templateFromUrl(): string {
 
 export type { ResumeData };
 
-const initialResumeData: ResumeData = {
-  personalInfo: {
-    fullName: "",
-    email: "",
-    phone: "",
-    location: "",
-    website: "",
-    linkedin: "",
-    summary: "",
-    photo: "",
-  },
-  experience: [],
-  education: [],
-  skills: [
-    { id: "skill-1", name: "", level: "Intermediate" },
-    { id: "skill-2", name: "", level: "Intermediate" },
-  ],
-  projects: [],
-  achievements: [],
-  awards: [],
-  certifications: [],
-  publications: [],
-};
-
 export const ResumeBuilder = () => {
-  const [resumeData, setResumeData] = useState<ResumeData>(resumeFromUrl);
-  const [selectedTemplate, setSelectedTemplate] = useState(templateFromUrl);
+  const [start] = useState(editorStart);
+  const [resumeData, setResumeData] = useState<ResumeData>(start.resumeData);
+  const [selectedTemplate, setSelectedTemplate] = useState(start.templateId);
   const [activeSection, setActiveSection] = useState("personal");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingWord, setIsGeneratingWord] = useState(false);
@@ -175,6 +168,21 @@ export const ResumeBuilder = () => {
     }
   };
 
+  const account = useResumeAccount({
+    resumeData,
+    setResumeData,
+    templateId: selectedTemplate,
+    setTemplateId: setSelectedTemplate,
+    initialResumeId: start.resumeId,
+    initialSavedSnapshot: start.savedSnapshot,
+    onDownload: (kind) => {
+      if (kind === "pdf") void handleDownload();
+      else void handleDownloadWord();
+    },
+  });
+
+  const accountLabel = account.user?.name || account.user?.email || "Signed in";
+
   return (
     <div 
       className="min-h-screen bg-background"
@@ -199,6 +207,41 @@ export const ResumeBuilder = () => {
               </div>
             </div>
             <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0">
+            {account.ready && !account.user && (
+              <Button
+                type="button"
+                onClick={() => void account.startGoogleSignIn()}
+                size="sm"
+                variant="secondary"
+                className="shrink-0 max-lg:min-h-11"
+                data-testid="header-google-sign-in"
+              >
+                Sign in with Google
+              </Button>
+            )}
+            {account.user && (
+              <>
+                <Button
+                  type="button"
+                  onClick={account.openMyCvs}
+                  size="sm"
+                  variant="secondary"
+                  className="shrink-0 max-lg:min-h-11"
+                >
+                  My CVs
+                </Button>
+                <span className="max-w-[12rem] truncate text-sm text-primary-foreground">{accountLabel}</span>
+                <Button
+                  type="button"
+                  onClick={() => account.request({ type: "sign-out" })}
+                  size="sm"
+                  variant="secondary"
+                  className="shrink-0 max-lg:min-h-11"
+                >
+                  Sign out
+                </Button>
+              </>
+            )}
             <Button 
               onClick={openChecklist} 
               size="sm" 
@@ -304,11 +347,40 @@ export const ResumeBuilder = () => {
       <DownloadChecklistDialog
         open={checklistOpen}
         onOpenChange={setChecklistOpen}
-        onDownloadPdf={handleDownload}
-        onDownloadWord={handleDownloadWord}
+        onDownloadPdf={() => account.request({ type: "download", kind: "pdf" })}
+        onDownloadWord={() => account.request({ type: "download", kind: "word" })}
         isGeneratingPDF={isGeneratingPDF}
         isGeneratingWord={isGeneratingWord}
         readyFile={readyFile}
+      />
+      <SaveVersionDialog
+        action={account.prompt}
+        signedIn={Boolean(account.user)}
+        saving={account.saving}
+        onAccept={() => void account.acceptPrompt()}
+        onSkip={account.skipPrompt}
+        onDismiss={account.dismissPrompt}
+      />
+      <MyCvsDialog
+        open={account.myCvsOpen}
+        onOpenChange={account.setMyCvsOpen}
+        resumes={account.resumes}
+        versions={account.versions}
+        loading={account.listLoading}
+        selectedResumeId={account.selectedResumeId}
+        onSelect={account.selectResume}
+        onOpen={(resumeId) => {
+          account.setMyCvsOpen(false);
+          account.request({ type: "open", resumeId });
+        }}
+        onNew={() => {
+          account.setMyCvsOpen(false);
+          account.request({ type: "new" });
+        }}
+        onRestore={(versionId) => {
+          account.setMyCvsOpen(false);
+          account.request({ type: "restore", versionId });
+        }}
       />
     </div>
   );

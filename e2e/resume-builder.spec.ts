@@ -92,6 +92,27 @@ test("checklist includes the Bachelor's 10th and 12th question", async ({ page }
   ).toBeVisible();
 });
 
+test("guest is asked to sign in with Google only after the checklist", async ({ page }) => {
+  await expect(page.getByTestId("header-google-sign-in")).toBeVisible();
+  await expect(page.getByRole("button", { name: "My CVs" })).toHaveCount(0);
+
+  await fillPersonalAndSkills(page);
+  await openDownloadChecklist(page);
+  await expect(page.getByRole("heading", { name: "Have you re-read these points?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Save this version?" })).toHaveCount(0);
+
+  await completeChecklist(page);
+  await page.getByTestId("checklist-download-pdf").click();
+  const savePrompt = page.getByRole("heading", { name: "Save this version?" });
+  await expect(savePrompt).toBeVisible();
+  await expect(page.getByTestId("save-prompt-confirm")).toHaveText("Sign in with Google");
+  await expect(page.getByTestId("save-prompt-skip")).toHaveText("Download without saving");
+
+  await page.getByRole("dialog").filter({ has: savePrompt }).getByRole("button", { name: "Close" }).click();
+  await expect(savePrompt).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Have you re-read these points?" })).toBeVisible();
+});
+
 test("smoke: Download PDF and Word produce files", async ({ page }) => {
   test.setTimeout(120_000);
   await fillPersonalAndSkills(page);
