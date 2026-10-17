@@ -72,6 +72,28 @@ for (const phone of PHONES) {
   });
 }
 
+for (const phone of PHONES) {
+  test(`header save stays tappable at ${phone.width}px`, async ({ page }) => {
+    await page.setViewportSize(phone);
+    const save = page.getByTestId("header-save-cv");
+    const actions = page.getByTestId("header-actions");
+    const account = page.getByTestId("header-account");
+    await expect(save).toBeVisible();
+    await expect(save).toBeEnabled();
+    const saveBox = await save.boundingBox();
+    const actionsBox = await actions.boundingBox();
+    const accountBox = await account.boundingBox();
+    expect(saveBox).toBeTruthy();
+    expect(actionsBox).toBeTruthy();
+    expect(accountBox).toBeTruthy();
+    expect(saveBox!.height).toBeGreaterThanOrEqual(44);
+    expect(saveBox!.x).toBeGreaterThanOrEqual(0);
+    expect(saveBox!.x + saveBox!.width).toBeLessThanOrEqual(phone.width + 1);
+    expect(accountBox!.y).toBeGreaterThanOrEqual(actionsBox!.y + actionsBox!.height - 4);
+    await expect(account.getByTestId("header-google-sign-in")).toBeVisible();
+  });
+}
+
 test("phone download keeps a tappable save link", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 360, height: 800 });

@@ -13,7 +13,8 @@ export type AccountAction =
   | { type: "open"; resumeId: string }
   | { type: "restore"; versionId: string }
   | { type: "sign-out" }
-  | { type: "save-only" };
+  | { type: "save-only" }
+  | { type: "save-draft" };
 
 export type PendingAction = AccountAction & { saveFirst: boolean };
 

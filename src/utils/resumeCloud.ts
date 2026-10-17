@@ -94,16 +94,14 @@ export async function getLatestResume(): Promise<SavedResume | null> {
   return data?.[0] ?? null;
 }
 
-export async function saveResumeVersion(input: {
+async function upsertResume(input: {
   resumeId: string | null;
   templateId: string;
   resumeData: ResumeData;
 }): Promise<string> {
   const supabase = client();
   const title = resumeTitle(input.resumeData);
-  let resumeId = input.resumeId;
-
-  if (resumeId) {
+  if (input.resumeId) {
     const { error } = await supabase
       .from("two_resume_builder_resumes")
       .update({
@@ -111,23 +109,38 @@ export async function saveResumeVersion(input: {
         template_id: input.templateId,
         resume_data: input.resumeData,
       })
-      .eq("id", resumeId);
+      .eq("id", input.resumeId);
     if (error) throw new Error(message(error, "Could not save this CV"));
-  } else {
-    const { data, error } = await supabase
-      .from("two_resume_builder_resumes")
-      .insert({
-        title,
-        template_id: input.templateId,
-        resume_data: input.resumeData,
-      })
-      .select("id")
-      .single();
-    if (error) throw new Error(message(error, "Could not save this CV"));
-    resumeId = data.id;
+    return input.resumeId;
   }
+  const { data, error } = await supabase
+    .from("two_resume_builder_resumes")
+    .insert({
+      title,
+      template_id: input.templateId,
+      resume_data: input.resumeData,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(message(error, "Could not save this CV"));
+  return data.id;
+}
 
-  const { error: versionError } = await supabase.from("two_resume_builder_versions").insert({
+export async function saveResumeDraft(input: {
+  resumeId: string | null;
+  templateId: string;
+  resumeData: ResumeData;
+}): Promise<string> {
+  return upsertResume(input);
+}
+
+export async function saveResumeVersion(input: {
+  resumeId: string | null;
+  templateId: string;
+  resumeData: ResumeData;
+}): Promise<string> {
+  const resumeId = await upsertResume(input);
+  const { error: versionError } = await client().from("two_resume_builder_versions").insert({
     resume_id: resumeId,
     template_id: input.templateId,
     resume_data: input.resumeData,

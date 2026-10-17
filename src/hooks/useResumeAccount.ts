@@ -21,6 +21,7 @@ import {
   getVersion,
   listResumes,
   listVersions,
+  saveResumeDraft,
   saveResumeVersion,
   type SavedResume,
   type SavedResumeSummary,
@@ -118,16 +119,33 @@ export function useResumeAccount({
     setSelectedResumeId(null);
   }, [setResumeData]);
 
+  const rememberSave = useCallback((id: string) => {
+    setResumeId(id);
+    setSelectedResumeId(id);
+    setSavedSnapshot(resumeSnapshot(resumeRef.current, templateRef.current));
+  }, []);
+
+  const persistDraft = useCallback(async () => {
+    const id = await saveResumeDraft({
+      resumeId: resumeIdRef.current,
+      templateId: templateRef.current,
+      resumeData: resumeRef.current,
+    });
+    rememberSave(id);
+    toast({
+      title: "CV saved",
+      description: "You can come back to this CV later.",
+    });
+  }, [rememberSave, toast]);
+
   const persistVersion = useCallback(async () => {
     const id = await saveResumeVersion({
       resumeId: resumeIdRef.current,
       templateId: templateRef.current,
       resumeData: resumeRef.current,
     });
-    setResumeId(id);
-    setSelectedResumeId(id);
-    setSavedSnapshot(resumeSnapshot(resumeRef.current, templateRef.current));
-  }, []);
+    rememberSave(id);
+  }, [rememberSave]);
 
   const openResume = useCallback(async (id: string) => {
     applySavedResume(await getResume(id));
@@ -206,19 +224,20 @@ export function useResumeAccount({
     }
     setSaving(true);
     try {
-      await persistVersion();
+      if (action.type === "save-draft") await persistDraft();
+      else await persistVersion();
       setPrompt(null);
-      if (action.type !== "save-only") await runAction(action);
+      if (action.type !== "save-only" && action.type !== "save-draft") await runAction(action);
     } catch (error) {
-      showError(error, "Could not save this version");
+      showError(error, action.type === "save-draft" ? "Could not save this CV" : "Could not save this version");
       setPrompt(null);
-      if (action.type !== "save-only") {
+      if (action.type !== "save-only" && action.type !== "save-draft") {
         await runAction(action).catch((followError) => showError(followError, "Could not continue"));
       }
     } finally {
       setSaving(false);
     }
-  }, [persistVersion, runAction, showError, signInWithGoogle]);
+  }, [persistDraft, persistVersion, runAction, showError, signInWithGoogle]);
 
   const skipPrompt = useCallback(() => {
     const action = promptRef.current;
@@ -260,9 +279,10 @@ export function useResumeAccount({
     void (async () => {
       try {
         if (pending?.saveFirst && user) {
-          await persistVersion();
+          if (pending.type === "save-draft") await persistDraft();
+          else await persistVersion();
         }
-        if (pending && pending.type !== "save-only") {
+        if (pending && pending.type !== "save-only" && pending.type !== "save-draft") {
           await runAction(pending);
           return;
         }
@@ -274,7 +294,7 @@ export function useResumeAccount({
         showError(error, "Could not restore your CV");
       }
     })();
-  }, [applySavedResume, persistVersion, ready, runAction, showError, user]);
+  }, [applySavedResume, persistDraft, persistVersion, ready, runAction, showError, user]);
 
   useEffect(() => {
     if (!ready || user || !hasOAuthReturn()) return;
@@ -313,6 +333,32 @@ export function useResumeAccount({
     void listVersions(id).then(setVersions).catch((error) => showError(error, "Could not load versions"));
   }, [showError]);
 
+  const saveDraft = useCallback(() => {
+    if (!ready) return;
+    if (isResumeBlank(resumeRef.current)) {
+      toast({
+        title: "Nothing to save",
+        description: "Add some details first.",
+      });
+      return;
+    }
+    if (!userRef.current) {
+      setPrompt({ type: "save-draft" });
+      return;
+    }
+    if (!needsSavePrompt(resumeRef.current, templateRef.current, savedSnapshotRef.current)) {
+      toast({
+        title: "Already saved",
+        description: "This CV is already saved.",
+      });
+      return;
+    }
+    setSaving(true);
+    void persistDraft()
+      .catch((error) => showError(error, "Could not save this CV"))
+      .finally(() => setSaving(false));
+  }, [persistDraft, ready, showError, toast]);
+
   const startGoogleSignIn = useCallback(async () => {
     skipLeaveRef.current = true;
     try {
@@ -342,5 +388,6 @@ export function useResumeAccount({
     openMyCvs,
     selectResume,
     startGoogleSignIn,
+    saveDraft,
   };
 }

@@ -23,9 +23,18 @@ function formatWhen(iso: string): string {
   });
 }
 
-function promptCopy(action: AccountAction, signedIn: boolean): { description: string; accept: string; skip: string } {
+function promptCopy(action: AccountAction, signedIn: boolean): { title: string; description: string; accept: string; skip: string } {
+  if (action.type === "save-draft") {
+    return {
+      title: "Save this CV?",
+      description: "Sign in with Google to keep the work you have done so far. You can come back to this CV later.",
+      accept: "Sign in with Google",
+      skip: "Not now",
+    };
+  }
   if (action.type === "save-only") {
     return {
+      title: "Save this version?",
       description: "Save this restored CV as a new version? Only the latest 10 versions are kept.",
       accept: "Save",
       skip: "Don't save",
@@ -34,11 +43,13 @@ function promptCopy(action: AccountAction, signedIn: boolean): { description: st
   if (action.type === "download") {
     return signedIn
       ? {
+          title: "Save this version?",
           description: "The re-read checklist is done. Save a version as well? Only the latest 10 versions are kept.",
           accept: "Save and download",
           skip: "Download without saving",
         }
       : {
+          title: "Save this version?",
           description: "The re-read checklist is done. Sign in with Google to save this version. Only the latest 10 are kept.",
           accept: "Sign in with Google",
           skip: "Download without saving",
@@ -46,11 +57,13 @@ function promptCopy(action: AccountAction, signedIn: boolean): { description: st
   }
   return signedIn
     ? {
+        title: "Save this version?",
         description: "Save this version before continuing? Only the latest 10 versions are kept.",
         accept: "Save",
         skip: "Don't save",
       }
     : {
+        title: "Save this version?",
         description: "Sign in with Google to save this version before continuing. Only the latest 10 are kept.",
         accept: "Sign in with Google",
         skip: "Continue without saving",
@@ -77,7 +90,7 @@ export function SaveVersionDialog({
     <Dialog open={action !== null} onOpenChange={(open) => { if (!open && !saving) onDismiss(); }}>
       <DialogContent overlayClassName="z-[80]" className="z-[80] bg-white text-gray-900">
         <DialogHeader>
-          <DialogTitle className="text-gray-900">Save this version?</DialogTitle>
+          <DialogTitle className="text-gray-900">{copy?.title ?? "Save this version?"}</DialogTitle>
           <DialogDescription className="text-gray-600">{copy?.description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">

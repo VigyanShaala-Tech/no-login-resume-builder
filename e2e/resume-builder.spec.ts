@@ -92,6 +92,21 @@ test("checklist includes the Bachelor's 10th and 12th question", async ({ page }
   ).toBeVisible();
 });
 
+test("save stores the current CV without opening the checklist", async ({ page }) => {
+  await expect(page.getByTestId("header-save-cv")).toBeEnabled();
+  await page.getByTestId("header-save-cv").click();
+  await expectToast(page, /Add some details first/i);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  await fillPersonalAndSkills(page);
+  await page.getByTestId("header-save-cv").click();
+  await expect(page.getByRole("heading", { name: "Save this CV?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Have you re-read these points?" })).toHaveCount(0);
+  await expect(page.getByTestId("save-prompt-confirm")).toHaveText("Sign in with Google");
+  await expect(page.getByTestId("save-prompt-skip")).toHaveText("Not now");
+  await expect(page.getByTestId("header-google-sign-in")).toBeVisible();
+});
+
 test("guest is asked to sign in with Google only after the checklist", async ({ page }) => {
   await expect(page.getByTestId("header-google-sign-in")).toBeVisible();
   await expect(page.getByRole("button", { name: "My CVs" })).toHaveCount(0);
