@@ -2,7 +2,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FileText, User, Briefcase, GraduationCap, Star, Loader2, Save } from "lucide-react";
+import { Download, FileText, User, Briefcase, GraduationCap, Star, Loader2, Save, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ResumeForm } from "./ResumeForm";
 import { ResumePreview } from "./ResumePreview";
 import { ResumePreviewFrame } from "./ResumePreviewFrame";
@@ -182,6 +190,12 @@ export const ResumeBuilder = () => {
   });
 
   const accountLabel = account.user?.name || account.user?.email || "Signed in";
+  const accountInitials = accountLabel
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "CV";
 
   return (
     <div 
@@ -206,96 +220,102 @@ export const ResumeBuilder = () => {
                 </p>
               </div>
             </div>
-            <div className="flex w-full flex-col gap-3 sm:w-auto lg:flex-row lg:items-center lg:justify-end lg:gap-6">
-            <div className="flex flex-wrap items-center gap-2" data-testid="header-actions">
+            <div className="flex w-full flex-wrap items-center justify-end gap-2 lg:w-auto" data-testid="header-actions">
             <Button
               type="button"
               onClick={account.saveDraft}
               size="sm"
               variant="secondary"
-              className="shrink-0 max-lg:min-h-11"
+              className="shrink-0 border border-white/35 bg-white/15 text-white shadow-none hover:bg-white/25 max-lg:min-h-11"
               disabled={!account.ready || account.saving}
               data-testid="header-save-cv"
             >
               {account.saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               <span className="whitespace-nowrap">{account.saving ? "Saving..." : "Save"}</span>
             </Button>
-            <Button 
-              onClick={openChecklist} 
-              size="sm" 
-              variant="secondary"
-              className="shrink-0 max-lg:min-h-11"
-              disabled={isGeneratingPDF || isGeneratingWord}
-              data-testid="header-download-pdf"
-            >
-              {isGeneratingPDF ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              <span className="whitespace-nowrap">{isGeneratingPDF ? "Generating..." : "Download PDF"}</span>
-            </Button>
-            <Button 
-              onClick={openChecklist} 
-              size="sm" 
-              variant="secondary"
-              className="shrink-0 max-lg:min-h-11"
-              disabled={isGeneratingPDF || isGeneratingWord}
-              data-testid="header-download-word"
-            >
-              {isGeneratingWord ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <FileText className="h-4 w-4" />
-              )}
-              <span className="whitespace-nowrap">{isGeneratingWord ? "Generating..." : "Download Word"}</span>
-            </Button>
-            </div>
-            <div className="flex flex-col items-start gap-1 lg:items-end" data-testid="header-account">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="shrink-0 bg-white text-[#2c4869] shadow-sm hover:bg-white/90 max-lg:min-h-11"
+                  disabled={isGeneratingPDF || isGeneratingWord}
+                  data-testid="header-download"
+                >
+                  {isGeneratingPDF || isGeneratingWord ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  <span>Download</span>
+                  <ChevronDown className="h-4 w-4 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" collisionPadding={8} className="min-w-[12rem] bg-white text-gray-900">
+                <DropdownMenuItem
+                  className="h-12 cursor-pointer gap-2 px-3"
+                  data-testid="header-download-pdf"
+                  disabled={isGeneratingPDF || isGeneratingWord}
+                  onSelect={openChecklist}
+                >
+                  <Download className="h-4 w-4" />
+                  PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="h-12 cursor-pointer gap-2 px-3"
+                  data-testid="header-download-word"
+                  disabled={isGeneratingPDF || isGeneratingWord}
+                  onSelect={openChecklist}
+                >
+                  <FileText className="h-4 w-4" />
+                  Word
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="ml-1 flex items-center" data-testid="header-account">
             {account.ready && !account.user && (
               <Button
                 type="button"
                 onClick={() => void account.startGoogleSignIn()}
                 size="sm"
                 variant="secondary"
-                className="shrink-0 max-lg:min-h-11"
+                className="shrink-0 border border-white/35 bg-white/15 text-white shadow-none hover:bg-white/25 max-lg:min-h-11"
                 data-testid="header-google-sign-in"
               >
-                Sign in with Google
+                <span className="sm:hidden">Sign in</span>
+                <span className="hidden sm:inline">Sign in with Google</span>
               </Button>
             )}
             {account.user && (
-              <>
-                <span
-                  className="max-w-full truncate px-1 text-sm font-medium leading-none text-primary-foreground sm:max-w-[14rem]"
-                  data-testid="header-account-name"
-                >
-                  {accountLabel}
-                </span>
-                <div className="flex items-center gap-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
                     type="button"
-                    onClick={account.openMyCvs}
                     size="sm"
-                    variant="ghost"
-                    className="h-8 shrink-0 px-2 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground max-lg:min-h-11"
+                    variant="secondary"
+                    className="max-w-[14rem] shrink-0 border border-white/35 bg-white/15 text-white shadow-none hover:bg-white/25 max-lg:min-h-11"
+                    data-testid="header-account-menu"
                   >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/25 text-[11px] font-semibold" aria-hidden="true">{accountInitials}</span>
+                    <span className="hidden truncate sm:inline" data-testid="header-account-name">{accountLabel}</span>
+                    <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" collisionPadding={8} className="min-w-[12rem] bg-white text-gray-900">
+                  <DropdownMenuLabel className="truncate font-medium text-gray-900">{accountLabel}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="h-12 cursor-pointer px-3" onSelect={account.openMyCvs}>
                     My CVs
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => account.request({ type: "sign-out" })}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 shrink-0 px-2 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground max-lg:min-h-11"
-                  >
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="h-12 cursor-pointer px-3" onSelect={() => account.request({ type: "sign-out" })}>
                     Sign out
-                  </Button>
-                </div>
-              </>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             </div>
-          </div>
+            </div>
           </div>
         </div>
       </header>

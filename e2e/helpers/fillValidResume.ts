@@ -66,6 +66,7 @@ export async function addEmptyAward(page: Page) {
 }
 
 export async function openDownloadChecklist(page: Page) {
+  await page.getByTestId("header-download").click();
   await page.getByTestId("header-download-pdf").click();
 }
 

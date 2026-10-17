@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { DOWNLOAD_CHECKLIST } from "../src/utils/resumeRules";
-import { completeChecklist, downloadFromChecklist, fillPersonalAndSkills } from "./helpers/fillValidResume";
+import { completeChecklist, downloadFromChecklist, fillPersonalAndSkills, openDownloadChecklist } from "./helpers/fillValidResume";
 
 const PHONES = [
   { width: 320, height: 700 },
@@ -56,7 +56,7 @@ for (const phone of PHONES) {
     await page.setViewportSize(phone);
     await page.goto("/");
     await fillPersonalAndSkills(page);
-    await page.getByTestId("header-download-pdf").click();
+    await openDownloadChecklist(page);
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     const box = await dialog.boundingBox();
@@ -73,24 +73,31 @@ for (const phone of PHONES) {
 }
 
 for (const phone of PHONES) {
-  test(`header save stays tappable at ${phone.width}px`, async ({ page }) => {
+  test(`header save and download menu stay tappable at ${phone.width}px`, async ({ page }) => {
     await page.setViewportSize(phone);
-    const save = page.getByTestId("header-save-cv");
-    const actions = page.getByTestId("header-actions");
-    const account = page.getByTestId("header-account");
-    await expect(save).toBeVisible();
-    await expect(save).toBeEnabled();
-    const saveBox = await save.boundingBox();
-    const actionsBox = await actions.boundingBox();
-    const accountBox = await account.boundingBox();
-    expect(saveBox).toBeTruthy();
-    expect(actionsBox).toBeTruthy();
-    expect(accountBox).toBeTruthy();
-    expect(saveBox!.height).toBeGreaterThanOrEqual(44);
-    expect(saveBox!.x).toBeGreaterThanOrEqual(0);
-    expect(saveBox!.x + saveBox!.width).toBeLessThanOrEqual(phone.width + 1);
-    expect(accountBox!.y).toBeGreaterThanOrEqual(actionsBox!.y + actionsBox!.height - 4);
-    await expect(account.getByTestId("header-google-sign-in")).toBeVisible();
+    const controls = [
+      page.getByTestId("header-save-cv"),
+      page.getByTestId("header-download"),
+      page.getByTestId("header-google-sign-in"),
+    ];
+    for (const control of controls) {
+      await expect(control).toBeVisible();
+      await expect(control).toBeEnabled();
+      const box = await control.boundingBox();
+      expect(box).toBeTruthy();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(phone.width + 1);
+    }
+    await page.getByTestId("header-download").click();
+    for (const item of [page.getByTestId("header-download-pdf"), page.getByTestId("header-download-word")]) {
+      await expect(item).toBeVisible();
+      const box = await item.boundingBox();
+      expect(box).toBeTruthy();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+      expect(box!.x).toBeGreaterThanOrEqual(-1);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(phone.width + 1);
+    }
   });
 }
 
@@ -99,7 +106,7 @@ test("phone download keeps a tappable save link", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
   await fillPersonalAndSkills(page);
-  await page.getByTestId("header-download-pdf").click();
+  await openDownloadChecklist(page);
   await completeChecklist(page);
   await downloadFromChecklist(page, "pdf");
   const save = page.getByTestId("save-ready-file");
