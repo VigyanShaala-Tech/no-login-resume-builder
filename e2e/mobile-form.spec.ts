@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { completeChecklist, fillPersonalAndSkills } from "./helpers/fillValidResume";
+import { DOWNLOAD_CHECKLIST } from "../src/utils/resumeRules";
+import { completeChecklist, downloadFromChecklist, fillPersonalAndSkills } from "./helpers/fillValidResume";
 
 const PHONES = [
   { width: 320, height: 700 },
@@ -50,22 +51,26 @@ for (const phone of PHONES) {
   });
 }
 
-test("checklist dialog fills the phone instead of a two-line strip", async ({ page }) => {
-  await page.setViewportSize({ width: 360, height: 640 });
-  await page.goto("/");
-  await fillPersonalAndSkills(page);
-  await page.getByTestId("header-download-pdf").click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog).toBeVisible();
-  const box = await dialog.boundingBox();
-  expect(box).toBeTruthy();
-  expect(box!.y).toBeGreaterThanOrEqual(0);
-  expect(box!.y + box!.height).toBeLessThanOrEqual(640 + 2);
-  expect(box!.height).toBeGreaterThanOrEqual(640 * 0.5);
-  const awards = dialog.getByText("If you added Awards, have you filled Title, Issuer, Date, and Description?");
-  await awards.scrollIntoViewIfNeeded();
-  await expect(awards).toBeVisible();
-});
+for (const phone of PHONES) {
+  test(`every checklist question is reachable at ${phone.width}px`, async ({ page }) => {
+    await page.setViewportSize(phone);
+    await page.goto("/");
+    await fillPersonalAndSkills(page);
+    await page.getByTestId("header-download-pdf").click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(phone.height + 2);
+    expect(box!.height).toBeGreaterThanOrEqual(phone.height * 0.5);
+    for (const question of DOWNLOAD_CHECKLIST) {
+      const line = dialog.getByText(question);
+      await line.scrollIntoViewIfNeeded();
+      await expect(line).toBeVisible();
+    }
+  });
+}
 
 test("phone download keeps a tappable save link", async ({ page }) => {
   test.setTimeout(120_000);
@@ -74,14 +79,11 @@ test("phone download keeps a tappable save link", async ({ page }) => {
   await fillPersonalAndSkills(page);
   await page.getByTestId("header-download-pdf").click();
   await completeChecklist(page);
-  const downloadPromise = page.waitForEvent("download", { timeout: 60_000 });
-  await page.getByTestId("checklist-download-pdf").click();
+  await downloadFromChecklist(page, "pdf");
   const save = page.getByTestId("save-ready-file");
   await expect(save).toBeVisible({ timeout: 60_000 });
   await expect(save).toHaveAttribute("href", /^blob:/);
   await expect(save).toHaveAttribute("download", /Jane_Doe_Resume\.pdf$/);
-  const first = await downloadPromise;
-  expect(first.suggestedFilename()).toMatch(/Jane_Doe_Resume\.pdf$/);
 
   const secondPromise = page.waitForEvent("download", { timeout: 15_000 });
   await save.click();
