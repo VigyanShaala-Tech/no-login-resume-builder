@@ -191,8 +191,8 @@ export const ResumeBuilder = () => {
       
       {/* Header */}
       <header className="border-b bg-gradient-primary text-primary-foreground shadow-elegant">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col gap-4">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-4">
               <img 
                 src="/Logo2.jpg" 
@@ -200,13 +200,13 @@ export const ResumeBuilder = () => {
                 className="h-12 w-auto shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="text-2xl font-bold leading-tight">VigyanShaala's Free Professional CV Builder</h1>
+                <h1 className="text-xl font-bold leading-tight sm:text-2xl">VigyanShaala's Free Professional CV Builder</h1>
                 <p className="text-primary-foreground/80 text-sm">
                   Create professional resumes and CVs instantly
                 </p>
               </div>
             </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            <div className="flex w-full flex-col gap-3 sm:w-auto lg:flex-row lg:items-center lg:justify-end lg:gap-6">
             <div className="flex flex-wrap items-center gap-2" data-testid="header-actions">
             <Button
               type="button"
@@ -251,8 +251,7 @@ export const ResumeBuilder = () => {
               <span className="whitespace-nowrap">{isGeneratingWord ? "Generating..." : "Download Word"}</span>
             </Button>
             </div>
-            <div className="hidden h-8 w-px shrink-0 bg-primary-foreground/30 sm:block" aria-hidden="true" />
-            <div className="flex flex-wrap items-center gap-2" data-testid="header-account">
+            <div className="flex flex-col items-start gap-1 lg:items-end" data-testid="header-account">
             {account.ready && !account.user && (
               <Button
                 type="button"
@@ -268,29 +267,31 @@ export const ResumeBuilder = () => {
             {account.user && (
               <>
                 <span
-                  className="max-w-full truncate text-sm font-medium text-primary-foreground sm:max-w-[12rem]"
+                  className="max-w-full truncate px-1 text-sm font-medium leading-none text-primary-foreground sm:max-w-[14rem]"
                   data-testid="header-account-name"
                 >
                   {accountLabel}
                 </span>
-                <Button
-                  type="button"
-                  onClick={account.openMyCvs}
-                  size="sm"
-                  variant="secondary"
-                  className="shrink-0 max-lg:min-h-11"
-                >
-                  My CVs
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => account.request({ type: "sign-out" })}
-                  size="sm"
-                  variant="secondary"
-                  className="shrink-0 max-lg:min-h-11"
-                >
-                  Sign out
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    onClick={account.openMyCvs}
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 shrink-0 px-2 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground max-lg:min-h-11"
+                  >
+                    My CVs
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => account.request({ type: "sign-out" })}
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 shrink-0 px-2 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground max-lg:min-h-11"
+                  >
+                    Sign out
+                  </Button>
+                </div>
               </>
             )}
             </div>
