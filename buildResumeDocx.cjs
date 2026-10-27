@@ -435,6 +435,15 @@ function buildResumakeClassic(data) {
           })
         );
       }
+      if (stripHtml(c.description)) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: stripHtml(c.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
     });
   }
 
@@ -642,6 +651,15 @@ function buildResumakeClassicSingle(data) {
         children.push(
           new Paragraph({
             children: [new TextRun(tr({ text: "Credential ID: " + c.credentialId, size: SZ.body, color: C.light }))],
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+      if (stripHtml(c.description)) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun(tr({ text: stripHtml(c.description), size: SZ.body }))],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -891,6 +909,15 @@ function appendThemedSections(children, data, theme) {
         children.push(
           new Paragraph({
             children: [new TextRun({ text: "Credential ID: " + c.credentialId, size: SZ.body, color: C.light })],
+            spacing: { after: SP.blockAfter },
+          })
+        );
+      }
+      if (stripHtml(c.description)) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: stripHtml(c.description), size: SZ.body, color: C.med })],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: SP.blockAfter },
           })
         );
@@ -1209,7 +1236,7 @@ function buildSidebar(data) {
     ["Projects", data.projects, (item) => ({ title: item.name, sub: item.technologies, date: item.date, body: item.description })],
     ["Achievements", data.achievements, (item) => ({ title: item.title, date: item.date, body: item.description })],
     ["Awards", data.awards, (item) => ({ title: item.title, sub: item.issuer, date: item.date, body: item.description })],
-    ["Certifications", data.certifications, (item) => ({ title: item.name, sub: item.issuer, date: item.date, body: item.credentialId ? "Credential ID: " + item.credentialId : "" })],
+    ["Certifications", data.certifications, (item) => ({ title: item.name, sub: item.issuer, date: item.date, note: item.credentialId ? "Credential ID: " + item.credentialId : "", body: stripHtml(item.description) })],
     ["Publications", data.publications, (item) => ({ title: item.title, sub: item.journal, note: item.authors ? "Authors: " + item.authors : "", date: item.date, body: item.link })],
   ];
   extraSections.forEach(([label, items, mapItem]) => {

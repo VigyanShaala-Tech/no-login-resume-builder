@@ -68,6 +68,7 @@ export interface ResumeData {
     date: string;
     expiryDate?: string;
     credentialId?: string;
+    description?: string;
   }>;
   publications?: Array<{
     id: string;

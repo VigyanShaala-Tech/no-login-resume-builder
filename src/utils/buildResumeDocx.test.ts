@@ -97,3 +97,44 @@ describe("Word contact links", () => {
     expect(rels).not.toContain("jordanhale.dev");
   });
 });
+
+describe("Word certification description", () => {
+  const data = {
+    ...resume,
+    certifications: [{
+      id: "cert-1",
+      name: "AWS Solutions Architect",
+      issuer: "Amazon Web Services",
+      date: "2023-04-01",
+      credentialId: "AWS-SAA-8821",
+      description: "<p>Covers VPC design and IAM.</p><ul><li>Cost controls</li></ul>",
+    }],
+  };
+
+  it.each(["resumake-classic", "resumake-classic-single", "modern", "sidebar"])(
+    "%s keeps the credential id and the description text",
+    async (template) => {
+      const { text } = await wordParts(template, data);
+      expect(text).toContain("Credential ID: AWS-SAA-8821");
+      expect(text).toContain("Covers VPC design and IAM.");
+      expect(text).toContain("Cost controls");
+    }
+  );
+
+  it("omits an empty description", async () => {
+    const empty = {
+      ...resume,
+      certifications: [{
+        id: "cert-1",
+        name: "AWS Solutions Architect",
+        issuer: "Amazon Web Services",
+        date: "2023-04-01",
+        credentialId: "AWS-SAA-8821",
+        description: "<p><br></p>",
+      }],
+    };
+    const { text } = await wordParts("resumake-classic", empty);
+    expect(text).toContain("Credential ID: AWS-SAA-8821");
+    expect(text).not.toContain("Covers VPC");
+  });
+});

@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Mail, Phone, Globe, Linkedin, Calendar, User, GraduationCap, Briefcase, LayoutGrid, FolderKanban, Trophy, Award, BadgeCheck, BookOpen, type LucideIcon } from "lucide-react";
 import { ResumeData } from "./ResumeBuilder";
-import { CONTACT_LINKEDIN_LABEL, CONTACT_WEBSITE_LABEL, educationEntryLines, formatContactLine, formatDateRange, formatPlace, formatResumeDate } from "@/utils/resumeRules";
+import { CONTACT_LINKEDIN_LABEL, CONTACT_WEBSITE_LABEL, educationEntryLines, formatContactLine, formatDateRange, formatPlace, formatResumeDate, isRichTextEmpty } from "@/utils/resumeRules";
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -391,6 +391,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.expiryDate && <div>Expires: {formatDate(cert.expiryDate)}</div>}
                   </div>
                 </div>
+                {!isRichTextEmpty(cert.description) && (
+                  <div
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: cert.description! }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -631,6 +637,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.expiryDate && <div>Expires: {formatDate(cert.expiryDate)}</div>}
                   </div>
                 </div>
+                {!isRichTextEmpty(cert.description) && (
+                  <div
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: cert.description! }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -868,6 +880,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.expiryDate && <div>Expires: {formatDate(cert.expiryDate)}</div>}
                   </div>
                 </div>
+                {!isRichTextEmpty(cert.description) && (
+                  <div
+                    className="text-gray-700 leading-relaxed mt-0.5"
+                    dangerouslySetInnerHTML={{ __html: cert.description! }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -1112,6 +1130,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.expiryDate && <div>Expires: {formatDate(cert.expiryDate)}</div>}
                   </div>
                 </div>
+                {!isRichTextEmpty(cert.description) && (
+                  <div
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: cert.description! }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -1344,6 +1368,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.expiryDate && <div>Expires: {formatDate(cert.expiryDate)}</div>}
                   </div>
                 </div>
+                {!isRichTextEmpty(cert.description) && (
+                  <div
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: cert.description! }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -1583,6 +1613,12 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     {cert.expiryDate && <div>Expires: {formatDate(cert.expiryDate)}</div>}
                   </div>
                 </div>
+                {!isRichTextEmpty(cert.description) && (
+                  <div
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: cert.description! }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -1829,6 +1865,11 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                 {cert.credentialId && (
                   <div className="resumake-classic-item-content">
                     <p className="resumake-classic-location">Credential ID: {cert.credentialId}</p>
+                  </div>
+                )}
+                {!isRichTextEmpty(cert.description) && (
+                  <div className="resumake-classic-item-content">
+                    <div dangerouslySetInnerHTML={{ __html: cert.description! }} />
                   </div>
                 )}
               </div>
@@ -2098,6 +2139,14 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                     <span className="font-medium">Credential ID:</span> {cert.credentialId}
                   </div>
                 )}
+                {!isRichTextEmpty(cert.description) && (
+                  <div className="-mt-1">
+                    <div
+                      className="text-black leading-relaxed ml-2"
+                      dangerouslySetInnerHTML={{ __html: cert.description! }}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -2349,6 +2398,9 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
                       {cert.date && <div className="sidebar-date">{formatDate(cert.date)}</div>}
                     </div>
                     {cert.credentialId && <p className="sidebar-meta">Credential ID: {cert.credentialId}</p>}
+                    {!isRichTextEmpty(cert.description) && (
+                      <div className="sidebar-prose" dangerouslySetInnerHTML={{ __html: cert.description! }} />
+                    )}
                   </div>
                 ))}
               </div>

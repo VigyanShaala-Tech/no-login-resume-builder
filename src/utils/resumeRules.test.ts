@@ -331,3 +331,12 @@ describe("validateResumeData — awards", () => {
     expect(validateResumeData(complete).valid).toBe(true);
   });
 });
+
+describe("validateResumeData — certifications", () => {
+  it("allows a certification when the description is empty", () => {
+    const data = validResume({
+      certifications: [{ id: "c1", name: "AWS", issuer: "Amazon", date: "2023-04-01", description: "<p><br></p>" }],
+    });
+    expect(validateResumeData(data).valid).toBe(true);
+  });
+});

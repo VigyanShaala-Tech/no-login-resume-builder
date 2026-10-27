@@ -241,7 +241,8 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
       issuer: "",
       date: "",
       expiryDate: "",
-      credentialId: ""
+      credentialId: "",
+      description: ""
     };
     setResumeData({
       ...resumeData,
@@ -988,6 +989,15 @@ export const ResumeForm = ({ resumeData, setResumeData, activeSection, selectedT
                   placeholder="Credential ID or Certificate Number"
                 />
               </div>
+            </div>
+            <div>
+              <RichTextEditor
+                label="Description (Optional)"
+                value={cert.description || ""}
+                onChange={(value) => updateCertification(cert.id, "description", value)}
+                placeholder="What this certification covers..."
+                height="200px"
+              />
             </div>
           </div>
         ))}
