@@ -1263,6 +1263,28 @@ button[data-variant="outline"]:hover {
     break-inside: auto !important;
     page-break-inside: auto !important;
   }
+
+  /* A heading stays with its first entry. Later entries in that section may still split. */
+  .sidebar-heading,
+  .sidebar-rail-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .sidebar-block > h2 + * {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+
+  .sidebar-job,
+  .sidebar-entry,
+  .sidebar-edu,
+  .sidebar-block > .sidebar-prose,
+  .sidebar-contact,
+  .sidebar-skills {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 
 .sidebar-photo {

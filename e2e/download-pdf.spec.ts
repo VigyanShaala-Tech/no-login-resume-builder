@@ -154,3 +154,28 @@ test("downloaded Sidebar PDF has expiry, a publication link, bullets, and both s
   expect(laterPages).not.toContain("SKILLS");
   expect(details.pageTexts.some((text) => /Publications|Layout systems/.test(text))).toBe(true);
 });
+
+test("Sidebar PDF keeps every section heading with its first entry", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/?sample=1&template=sidebar");
+  const pdf = await downloadPreviewPdf(page);
+  const details = await pdfDetails(pdf);
+  const pairs = [
+    ["CONTACT", "555-014-8821"],
+    ["EDUCATION", "University of Texas"],
+    ["SKILLS", "TypeScript"],
+    ["ABOUT ME", "Product engineer"],
+    ["EXPERIENCE", "Senior Product Engineer"],
+    ["PROJECTS", "Applicant Preview Kit"],
+    ["ACHIEVEMENTS", "Shipped zero-login"],
+    ["AWARDS", "Engineering Excellence"],
+    ["CERTIFICATIONS", "AWS Solutions Architect"],
+    ["PUBLICATIONS", "Layout systems"],
+  ] as const;
+  for (const [heading, entry] of pairs) {
+    const headingPage = details.pageTexts.findIndex((text) => text.includes(heading));
+    const entryPage = details.pageTexts.findIndex((text) => text.includes(entry));
+    expect(headingPage, heading).toBeGreaterThanOrEqual(0);
+    expect(entryPage, entry).toBe(headingPage);
+  }
+});
