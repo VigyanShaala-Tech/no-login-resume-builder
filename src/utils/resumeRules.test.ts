@@ -100,15 +100,24 @@ describe("formatEducationScore", () => {
   it("shows Percentage with a % sign", () => {
     expect(formatEducationScore({ gpa: "85", scoreType: "percentage" })).toBe("Percentage: 85%");
     expect(formatEducationScore({ gpa: "85%", scoreType: "percentage" })).toBe("Percentage: 85%");
+    expect(formatEducationScore({ gpa: "92", scoreType: "percentage" })).toBe("Percentage: 92%");
   });
 
   it("shows GPA out of 10", () => {
     expect(formatEducationScore({ gpa: "8.5", scoreType: "gpa" })).toBe("GPA: 8.5/10");
     expect(formatEducationScore({ gpa: "8.5/10", scoreType: "gpa" })).toBe("GPA: 8.5/10");
+    expect(formatEducationScore({ gpa: "8.6", scoreType: "gpa" })).toBe("GPA: 8.6/10");
   });
 
   it("returns empty when there is no score", () => {
     expect(formatEducationScore({ gpa: "", scoreType: "gpa" })).toBe("");
+  });
+
+  it("does not label a number as GPA when no score type is chosen", () => {
+    const unlabeled = formatEducationScore({ gpa: "8.6" });
+    expect(unlabeled).toBe("");
+    expect(unlabeled).not.toContain("GPA");
+    expect(formatEducationScore({ gpa: "92", scoreType: undefined })).not.toContain("GPA");
   });
 });
 
@@ -242,19 +251,31 @@ describe("validateResumeData — education", () => {
     expect(validateResumeData(incomplete).message).toMatch(/School/i);
   });
 
-  it("rejects GPA above 10 and accepts 8.5", () => {
+  it("rejects GPA above 10 and accepts 8.5 and 8.6", () => {
     expect(validateResumeData(validResume({ education: [education({ gpa: "11", scoreType: "gpa" })] })).valid).toBe(false);
     expect(validateResumeData(validResume({ education: [education({ gpa: "8.5", scoreType: "gpa" })] })).valid).toBe(true);
+    expect(validateResumeData(validResume({ education: [education({ gpa: "8.6", scoreType: "gpa" })] })).valid).toBe(true);
   });
 
-  it("rejects percentage above 100 and accepts 85", () => {
+  it("rejects percentage above 100 and accepts 85 and 92", () => {
     expect(validateResumeData(validResume({ education: [education({ gpa: "101", scoreType: "percentage" })] })).valid).toBe(false);
     expect(validateResumeData(validResume({ education: [education({ gpa: "85", scoreType: "percentage" })] })).valid).toBe(true);
+    expect(validateResumeData(validResume({ education: [education({ gpa: "92", scoreType: "percentage" })] })).valid).toBe(true);
   });
 
   it("requires score type when a score is entered, and a score when type is selected", () => {
+    const missingType = validateResumeData(validResume({ education: [education({ gpa: "8.6", scoreType: undefined })] }));
+    expect(missingType.valid).toBe(false);
+    expect(missingType.message).toMatch(/Percentage or GPA/i);
     expect(validateResumeData(validResume({ education: [education({ gpa: "8.5", scoreType: undefined })] })).message).toMatch(/Percentage or GPA/i);
-    expect(validateResumeData(validResume({ education: [education({ gpa: "", scoreType: "gpa" })] })).message).toMatch(/GPA/i);
+
+    const missingGpa = validateResumeData(validResume({ education: [education({ gpa: "", scoreType: "gpa" })] }));
+    expect(missingGpa.valid).toBe(false);
+    expect(missingGpa.message).toMatch(/GPA/i);
+
+    const missingPercentage = validateResumeData(validResume({ education: [education({ gpa: "", scoreType: "percentage" })] }));
+    expect(missingPercentage.valid).toBe(false);
+    expect(missingPercentage.message).toMatch(/percentage/i);
   });
 });
 

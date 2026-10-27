@@ -129,6 +129,8 @@ export function formatEducationScore(edu: { gpa?: string; scoreType?: ScoreType 
     const withPct = value.endsWith("%") ? value : `${value}%`;
     return `Percentage: ${withPct}`;
   }
+  // A number with no type is not a GPA. Hide it until Percentage or GPA is chosen.
+  if (edu.scoreType !== "gpa") return "";
   const stripped = value.replace(/\/\s*10$/i, "").trim();
   return `GPA: ${stripped}/10`;
 }

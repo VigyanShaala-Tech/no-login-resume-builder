@@ -1227,6 +1227,24 @@ button[data-variant="outline"]:hover {
   padding: 1.85rem 1.6rem 1.5rem 1.55rem;
 }
 
+/* Print/PDF only. A fixed rail repeats on every page so the navy column
+   fills the page when a later section moves to page 2. Screen stays flex. */
+@media print {
+  .sidebar-rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 32%;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .sidebar-main {
+    margin-left: 32%;
+  }
+}
+
 .sidebar-photo {
   width: 7.25rem;
   height: 7.25rem;
@@ -1468,7 +1486,21 @@ button[data-variant="outline"]:hover {
 
 .sidebar-prose ul,
 .sidebar-prose ol {
-  padding-left: 1rem;
+  padding-left: 1.15rem;
+}
+
+.sidebar-prose ul,
+.sidebar-prose ul li {
+  list-style-type: disc !important;
+}
+
+.sidebar-prose ol,
+.sidebar-prose ol li {
+  list-style-type: decimal !important;
+}
+
+.sidebar-prose li {
+  display: list-item !important;
 }
 
 .sidebar-prose li + li {

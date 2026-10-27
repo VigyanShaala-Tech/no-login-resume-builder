@@ -121,7 +121,7 @@ describe("Word certification description", () => {
     }
   );
 
-  it("omits an empty description", async () => {
+  it("omits an empty description and an empty expiry", async () => {
     const empty = {
       ...resume,
       certifications: [{
@@ -136,5 +136,88 @@ describe("Word certification description", () => {
     const { text } = await wordParts("resumake-classic", empty);
     expect(text).toContain("Credential ID: AWS-SAA-8821");
     expect(text).not.toContain("Covers VPC");
+    expect(text).not.toContain("Expires");
+  });
+});
+
+describe("Word certification expiry and publication links", () => {
+  const data = {
+    ...resume,
+    certifications: [{
+      id: "cert-1",
+      name: "AWS Solutions Architect",
+      issuer: "Amazon Web Services",
+      date: "2023-04-01",
+      expiryDate: "2026-04",
+      credentialId: "AWS-SAA-8821",
+      description: "<p>Covers VPC design.</p>",
+    }],
+    publications: [{
+      id: "pub-1",
+      title: "Layout systems",
+      journal: "Engineering Practice Review",
+      date: "2024-02-01",
+      authors: "Jordan Hale",
+      link: "https://jordanhale.dev/layout-systems",
+    }],
+  };
+
+  it.each(["resumake-classic", "resumake-classic-single", "modern", "sidebar"])(
+    "%s prints Expires with the formatted date and a real publication hyperlink",
+    async (template) => {
+      const { text, rels, documentXml } = await wordParts(template, data);
+      expect(text).toContain("Expires");
+      expect(text).toContain("Apr 2026");
+      expect(text).toContain("Authors: Jordan Hale");
+      expect(rels).toContain("https://jordanhale.dev/layout-systems");
+      expect(documentXml).toContain('w:val="single"');
+      expect(text).toContain("https://jordanhale.dev/layout-systems");
+    }
+  );
+
+  it.each(["resumake-classic", "resumake-classic-single", "modern", "sidebar"])(
+    "%s omits Expires when expiryDate is empty and hides an empty publication link",
+    async (template) => {
+      const empty = {
+        ...resume,
+        certifications: [{
+          id: "cert-1",
+          name: "AWS Solutions Architect",
+          issuer: "Amazon Web Services",
+          date: "2023-04-01",
+          expiryDate: "",
+          credentialId: "AWS-SAA-8821",
+        }],
+        publications: [{
+          id: "pub-1",
+          title: "Layout systems",
+          journal: "Engineering Practice Review",
+          date: "2024-02-01",
+          authors: "Jordan Hale",
+          link: "",
+        }],
+      };
+      const { text, rels } = await wordParts(template, empty);
+      expect(text).toContain("Authors: Jordan Hale");
+      expect(text).not.toContain("Expires");
+      expect(rels).not.toContain("layout-systems");
+    }
+  );
+
+  it("does not label a score as GPA when the type is missing", async () => {
+    const unscored = {
+      ...resume,
+      education: [{
+        id: "edu-1",
+        school: "Sri Chaitanya Junior College",
+        degree: "Intermediate",
+        gpa: "8.6",
+        startDate: "2020-06-01",
+        endDate: "2022-03-01",
+      }],
+    };
+    const { text } = await wordParts("modern", unscored);
+    expect(text).not.toContain("GPA");
+    expect(text).not.toContain("8.6");
   });
 });

@@ -95,8 +95,49 @@ function formatEducationScore(edu) {
     const withPct = value.endsWith("%") ? value : value + "%";
     return "Percentage: " + withPct;
   }
+  // A number with no type is not a GPA. Hide it until Percentage or GPA is chosen.
+  if (!edu || edu.scoreType !== "gpa") return "";
   const stripped = value.replace(/\/\s*10$/i, "").trim();
   return "GPA: " + stripped + "/10";
+}
+
+function expiryText(date) {
+  const formatted = formatDate(date);
+  return formatted ? "Expires: " + formatted : "";
+}
+
+function plainLine(text, opts) {
+  if (!text) return null;
+  const style = opts || {};
+  return new Paragraph({
+    children: [
+      new TextRun({
+        text,
+        size: style.size || SZ.body,
+        color: style.color || C.light,
+        font: style.font,
+        italics: !!style.italics,
+      }),
+    ],
+    spacing: { after: style.after == null ? 40 : style.after },
+  });
+}
+
+function publicationLinkParagraph(link, opts) {
+  const label = link && String(link).trim();
+  const href = externalHref(label);
+  if (!label || !href) return null;
+  const style = opts || {};
+  return new Paragraph({
+    children: [
+      webLink(label, href, {
+        size: style.size || SZ.body,
+        linkColor: style.linkColor || LINK_BLUE,
+        font: style.font,
+      }),
+    ],
+    spacing: { after: style.after == null ? SP.blockAfter : style.after },
+  });
 }
 
 const EDUCATION_RIGHT_TAB = 9360;
@@ -427,6 +468,8 @@ function buildResumakeClassic(data) {
           spacing: { after: SP.itemAfter },
         })
       );
+      const expiry = plainLine(expiryText(c.expiryDate), { color: C.light, after: 40 });
+      if (expiry) children.push(expiry);
       if (c.credentialId) {
         children.push(
           new Paragraph({
@@ -471,6 +514,8 @@ function buildResumakeClassic(data) {
           })
         );
       }
+      const link = publicationLinkParagraph(pub.link, { linkColor: LINK_BLUE });
+      if (link) children.push(link);
     });
   }
 
@@ -647,6 +692,8 @@ function buildResumakeClassicSingle(data) {
           spacing: { after: SP.itemAfter },
         })
       );
+      const expiry = plainLine(expiryText(c.expiryDate), { color: C.light, font: FONT.times, after: 40 });
+      if (expiry) children.push(expiry);
       if (c.credentialId) {
         children.push(
           new Paragraph({
@@ -691,6 +738,8 @@ function buildResumakeClassicSingle(data) {
           })
         );
       }
+      const link = publicationLinkParagraph(pub.link, { font: FONT.times, linkColor: LINK_BLUE });
+      if (link) children.push(link);
     });
   }
 
@@ -905,6 +954,8 @@ function appendThemedSections(children, data, theme) {
           })
         );
       }
+      const expiry = plainLine(expiryText(c.expiryDate), { color: C.light, after: 40 });
+      if (expiry) children.push(expiry);
       if (c.credentialId) {
         children.push(
           new Paragraph({
@@ -945,6 +996,8 @@ function appendThemedSections(children, data, theme) {
           })
         );
       }
+      const link = publicationLinkParagraph(pub.link, { linkColor: theme.linkColor || LINK_BLUE });
+      if (link) children.push(link);
     });
   }
 }
@@ -1236,8 +1289,8 @@ function buildSidebar(data) {
     ["Projects", data.projects, (item) => ({ title: item.name, sub: item.technologies, date: item.date, body: item.description })],
     ["Achievements", data.achievements, (item) => ({ title: item.title, date: item.date, body: item.description })],
     ["Awards", data.awards, (item) => ({ title: item.title, sub: item.issuer, date: item.date, body: item.description })],
-    ["Certifications", data.certifications, (item) => ({ title: item.name, sub: item.issuer, date: item.date, note: item.credentialId ? "Credential ID: " + item.credentialId : "", body: stripHtml(item.description) })],
-    ["Publications", data.publications, (item) => ({ title: item.title, sub: item.journal, note: item.authors ? "Authors: " + item.authors : "", date: item.date, body: item.link })],
+    ["Certifications", data.certifications, (item) => ({ title: item.name, sub: item.issuer, date: item.date, note: item.credentialId ? "Credential ID: " + item.credentialId : "", extra: expiryText(item.expiryDate), body: stripHtml(item.description) })],
+    ["Publications", data.publications, (item) => ({ title: item.title, sub: item.journal, note: item.authors ? "Authors: " + item.authors : "", date: item.date, link: item.link })],
   ];
   extraSections.forEach(([label, items, mapItem]) => {
     if (!items || !items.length) return;
@@ -1256,6 +1309,9 @@ function buildSidebar(data) {
       );
       if (row.sub) main.push(sidebarMainParagraph([new TextRun({ text: row.sub, italics: true, size: 20, color: "4B5563", font: "Calibri" })], { after: 20 }));
       if (row.note) main.push(sidebarMainParagraph([new TextRun({ text: row.note, size: 18, color: "4B5563", font: "Calibri" })], { after: 20 }));
+      if (row.extra) main.push(sidebarMainParagraph([new TextRun({ text: row.extra, size: 18, color: "4B5563", font: "Calibri" })], { after: 20 }));
+      const link = publicationLinkParagraph(row.link, { size: 18, linkColor: LINK_BLUE, font: "Calibri", after: 60 });
+      if (link) main.push(link);
       if (row.body) main.push(sidebarMainParagraph([new TextRun({ text: stripHtml(row.body), size: 20, color: "374151", font: "Calibri" })], { after: 60 }));
     });
   });
