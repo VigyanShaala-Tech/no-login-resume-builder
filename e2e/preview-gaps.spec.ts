@@ -41,30 +41,33 @@ test("a score with no type is not shown as GPA", async ({ page }) => {
   await expect(preview).not.toContainText("8.6");
 });
 
-test("Sidebar print rail is fixed and the main column is offset", async ({ page }) => {
+test("Sidebar print bar is a navy strip and the rail text stays in flow", async ({ page }) => {
   await page.goto("/?sample=1&template=sidebar");
   await page.emulateMedia({ media: "print" });
   const layout = await page.locator("#resume-preview").evaluate(() => {
+    const bar = document.querySelector(".sidebar-print-bar");
     const rail = document.querySelector("[data-sidebar-rail]");
     const main = document.querySelector(".sidebar-main");
-    if (!rail || !main) return null;
+    if (!bar || !rail || !main) return null;
+    const barStyle = getComputedStyle(bar);
     const railStyle = getComputedStyle(rail);
-    const mainStyle = getComputedStyle(main);
     const railBox = rail.getBoundingClientRect();
     const mainBox = main.getBoundingClientRect();
     return {
-      position: railStyle.position,
-      top: railStyle.top,
-      bottom: railStyle.bottom,
-      marginLeft: mainStyle.marginLeft,
+      barPosition: barStyle.position,
+      barTop: barStyle.top,
+      barDisplay: barStyle.display,
+      barText: (bar.textContent || "").trim(),
+      railPosition: railStyle.position,
       railRight: railBox.right,
       mainLeft: mainBox.left,
     };
   });
   expect(layout).not.toBeNull();
-  expect(layout!.position).toBe("fixed");
-  expect(layout!.top).toBe("0px");
-  expect(layout!.bottom).toBe("0px");
-  expect(parseFloat(layout!.marginLeft)).toBeGreaterThan(0);
+  expect(layout!.barPosition).toBe("fixed");
+  expect(layout!.barDisplay).toBe("block");
+  expect(parseFloat(layout!.barTop)).toBeLessThan(0);
+  expect(layout!.barText).toBe("");
+  expect(layout!.railPosition).not.toBe("fixed");
   expect(layout!.mainLeft).toBeGreaterThanOrEqual(layout!.railRight - 2);
 });

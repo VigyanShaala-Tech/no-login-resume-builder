@@ -2446,6 +2446,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
 
     return (
       <div className="sidebar-resume">
+        <div className="sidebar-print-bar" aria-hidden="true" />
         {main}
         {rail}
       </div>

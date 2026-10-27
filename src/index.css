@@ -1227,21 +1227,41 @@ button[data-variant="outline"]:hover {
   padding: 1.85rem 1.6rem 1.5rem 1.55rem;
 }
 
-/* Print/PDF only. A fixed rail repeats on every page so the navy column
-   fills the page when a later section moves to page 2. Screen stays flex. */
+/* Empty on screen. In the PDF it is only the navy color, pulled through the
+   page margin so page 2 is a plain strip and the text stays on page 1. */
+.sidebar-print-bar {
+  display: none;
+}
+
 @media print {
-  .sidebar-rail {
+  .sidebar-print-bar {
+    display: block;
     position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 32%;
+    top: -12mm;
+    bottom: -12mm;
+    left: -10px;
+    width: calc(32% + 10px);
+    background: #1b3a4b;
+    z-index: 0;
+    pointer-events: none;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
 
+  .sidebar-rail,
   .sidebar-main {
-    margin-left: 32%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar-rail {
+    background: transparent;
+  }
+
+  .resume-preview > .sidebar-resume,
+  .sidebar-resume section {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 }
 

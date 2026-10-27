@@ -143,7 +143,14 @@ test("downloaded Sidebar PDF has expiry, a publication link, bullets, and both s
   expect(details.text).toContain("Percentage: 92%");
   expect(details.links).toContain(PUBLICATION_URL);
   const websiteHits = details.links.filter((link) => link.replace(/\/$/, "") === "https://jordanhale.dev");
-  expect(websiteHits.length).toBe(details.numpages);
+  expect(websiteHits).toHaveLength(1);
   expect(details.links).toContain("https://linkedin.com/in/jordanhale");
+  expect(details.pageTexts[0]).toContain("CONTACT");
+  expect(details.pageTexts[0]).toContain("555-014-8821");
+  const laterPages = details.pageTexts.slice(1).join(" ");
+  expect(laterPages).not.toContain("CONTACT");
+  expect(laterPages).not.toContain("555-014-8821");
+  expect(laterPages).not.toContain("EDUCATION");
+  expect(laterPages).not.toContain("SKILLS");
   expect(details.pageTexts.some((text) => /Publications|Layout systems/.test(text))).toBe(true);
 });
