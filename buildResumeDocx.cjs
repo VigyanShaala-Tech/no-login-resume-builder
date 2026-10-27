@@ -30,8 +30,105 @@ function stripHtml(html) {
   return html
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// One description style for every builder. A list item is its own block.
+// Plain HTML with no list stays one block, matching the old stripHtml line.
+function htmlBlocks(html) {
+  if (!html || typeof html !== "string") return [];
+  if (!/<(ul|ol|li)\b/i.test(html)) {
+    const text = stripHtml(html);
+    return text ? [{ kind: "p", text }] : [];
+  }
+  const blocks = [];
+  const listStack = [];
+  const tokenRe = /<(\/?)(ul|ol|li)\b[^>]*>/gi;
+  let last = 0;
+  let match;
+  let liOpen = false;
+  let liStart = 0;
+  let liKind = "ul";
+  let liNumber = 1;
+
+  function pushPlain(fragment) {
+    const text = stripHtml(fragment);
+    if (text) blocks.push({ kind: "p", text });
+  }
+
+  while ((match = tokenRe.exec(html))) {
+    const closing = match[1] === "/";
+    const tag = match[2].toLowerCase();
+    if (!closing && (tag === "ul" || tag === "ol")) {
+      if (!liOpen) pushPlain(html.slice(last, match.index));
+      listStack.push({ kind: tag, number: 1 });
+      last = match.index + match[0].length;
+    } else if (closing && (tag === "ul" || tag === "ol")) {
+      if (liOpen) {
+        const text = stripHtml(html.slice(liStart, match.index));
+        if (text) blocks.push({ kind: liKind, text, number: liNumber });
+        liOpen = false;
+      } else {
+        pushPlain(html.slice(last, match.index));
+      }
+      listStack.pop();
+      last = match.index + match[0].length;
+    } else if (!closing && tag === "li") {
+      if (liOpen) {
+        const text = stripHtml(html.slice(liStart, match.index));
+        if (text) blocks.push({ kind: liKind, text, number: liNumber });
+      } else {
+        pushPlain(html.slice(last, match.index));
+      }
+      const list = listStack[listStack.length - 1] || { kind: "ul", number: 1 };
+      const dataList = /data-list\s*=\s*["']([^"']+)["']/i.exec(match[0]);
+      const listed = dataList ? dataList[1].toLowerCase() : "";
+      liKind = listed === "ordered" ? "ol" : listed === "bullet" || listed === "checked" || listed === "unchecked" ? "ul" : list.kind;
+      liNumber = list.number;
+      list.number += 1;
+      liOpen = true;
+      liStart = match.index + match[0].length;
+      last = liStart;
+    } else if (closing && tag === "li") {
+      if (liOpen) {
+        const text = stripHtml(html.slice(liStart, match.index));
+        if (text) blocks.push({ kind: liKind, text, number: liNumber });
+        liOpen = false;
+      }
+      last = match.index + match[0].length;
+    }
+  }
+  if (liOpen) {
+    const text = stripHtml(html.slice(liStart));
+    if (text) blocks.push({ kind: liKind, text, number: liNumber });
+  } else {
+    pushPlain(html.slice(last));
+  }
+  return blocks;
+}
+
+function blockPrefix(block) {
+  if (block.kind === "ul") return "• ";
+  if (block.kind === "ol") return `${block.number}. `;
+  return "";
+}
+
+function descriptionParagraphs(html, makeRun, after) {
+  const blocks = htmlBlocks(html);
+  return blocks.map((block, index) => {
+    const last = index === blocks.length - 1;
+    return new Paragraph({
+      children: [makeRun(blockPrefix(block) + block.text)],
+      alignment: block.kind === "p" ? AlignmentType.JUSTIFIED : AlignmentType.LEFT,
+      spacing: { after: last ? after : 40 },
+    });
+  });
 }
 
 function joinFilled(parts, separator) {
@@ -315,13 +412,7 @@ function buildResumakeClassic(data) {
 
   if (p.summary) {
     children.push(...sectionHeadingWithLine("Professional Summary"));
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: stripHtml(p.summary), size: SZ.body, color: C.med })],
-        alignment: AlignmentType.JUSTIFIED,
-        spacing: { after: SP.blockAfter },
-      })
-    );
+    children.push(...descriptionParagraphs(p.summary, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
   }
 
   if (data.experience && data.experience.length > 0) {
@@ -341,15 +432,7 @@ function buildResumakeClassic(data) {
           spacing: { after: SP.itemAfter },
         })
       );
-      if (exp.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(exp.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(exp.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -388,15 +471,7 @@ function buildResumakeClassic(data) {
           })
         );
       }
-      if (proj.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(proj.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(proj.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -412,15 +487,7 @@ function buildResumakeClassic(data) {
           spacing: { after: SP.itemAfter },
         })
       );
-      if (a.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(a.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -440,15 +507,7 @@ function buildResumakeClassic(data) {
           spacing: { after: SP.itemAfter },
         })
       );
-      if (a.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(a.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -478,15 +537,7 @@ function buildResumakeClassic(data) {
           })
         );
       }
-      if (stripHtml(c.description)) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(c.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(c.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -543,13 +594,7 @@ function buildResumakeClassicSingle(data) {
 
   if (p.summary) {
     children.push(shadedSectionHeading("Professional Summary"));
-    children.push(
-      new Paragraph({
-        children: [new TextRun(tr({ text: stripHtml(p.summary), size: SZ.body }))],
-        alignment: AlignmentType.JUSTIFIED,
-        spacing: { after: SP.blockAfter },
-      })
-    );
+    children.push(...descriptionParagraphs(p.summary, (text) => new TextRun(tr({ text, size: SZ.body })), SP.blockAfter));
   }
 
   if (data.experience && data.experience.length > 0) {
@@ -569,15 +614,7 @@ function buildResumakeClassicSingle(data) {
           spacing: { after: SP.itemAfter },
         })
       );
-      if (exp.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun(tr({ text: stripHtml(exp.description), size: SZ.body }))],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(exp.description, (text) => new TextRun(tr({ text, size: SZ.body })), SP.blockAfter));
     });
   }
 
@@ -600,15 +637,7 @@ function buildResumakeClassicSingle(data) {
           spacing: { after: SP.itemAfter },
         })
       );
-      if (proj.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun(tr({ text: stripHtml(proj.description), size: SZ.body }))],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(proj.description, (text) => new TextRun(tr({ text, size: SZ.body })), SP.blockAfter));
       if (proj.technologies) {
         children.push(
           new Paragraph({
@@ -640,15 +669,7 @@ function buildResumakeClassicSingle(data) {
           spacing: { after: SP.itemAfter },
         })
       );
-      if (a.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun(tr({ text: stripHtml(a.description), size: SZ.body }))],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(a.description, (text) => new TextRun(tr({ text, size: SZ.body })), SP.blockAfter));
     });
   }
 
@@ -664,15 +685,7 @@ function buildResumakeClassicSingle(data) {
           spacing: { after: 40 },
         })
       );
-      if (a.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun(tr({ text: stripHtml(a.description), size: SZ.body }))],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(a.description, (text) => new TextRun(tr({ text, size: SZ.body })), SP.blockAfter));
     });
   }
 
@@ -702,15 +715,7 @@ function buildResumakeClassicSingle(data) {
           })
         );
       }
-      if (stripHtml(c.description)) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun(tr({ text: stripHtml(c.description), size: SZ.body }))],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(c.description, (text) => new TextRun(tr({ text, size: SZ.body })), SP.blockAfter));
     });
   }
 
@@ -804,13 +809,7 @@ function appendThemedSections(children, data, theme) {
 
   if (p.summary) {
     children.push(...heading(theme.labels.summary));
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: stripHtml(p.summary), size: SZ.body, color: C.med })],
-        alignment: AlignmentType.JUSTIFIED,
-        spacing: { after: SP.blockAfter },
-      })
-    );
+    children.push(...descriptionParagraphs(p.summary, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
   }
 
   if (data.experience && data.experience.length > 0) {
@@ -839,15 +838,7 @@ function appendThemedSections(children, data, theme) {
           );
         }
       }
-      if (exp.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(exp.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(exp.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -890,15 +881,7 @@ function appendThemedSections(children, data, theme) {
           })
         );
       }
-      if (proj.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(proj.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(proj.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -906,15 +889,7 @@ function appendThemedSections(children, data, theme) {
     children.push(...heading(theme.labels.achievements));
     data.achievements.forEach((a) => {
       children.push(itemRow(a.title, "", a.date ? formatDate(a.date) : ""));
-      if (a.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(a.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -930,15 +905,7 @@ function appendThemedSections(children, data, theme) {
           })
         );
       }
-      if (a.description) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(a.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(a.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -964,15 +931,7 @@ function appendThemedSections(children, data, theme) {
           })
         );
       }
-      if (stripHtml(c.description)) {
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: stripHtml(c.description), size: SZ.body, color: C.med })],
-            alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: SP.blockAfter },
-          })
-        );
-      }
+      children.push(...descriptionParagraphs(c.description, (text) => new TextRun({ text, size: SZ.body, color: C.med }), SP.blockAfter));
     });
   }
 
@@ -1181,6 +1140,16 @@ function sidebarMainParagraph(runs, opts = {}) {
   });
 }
 
+function sidebarDescriptionParagraphs(html, after) {
+  const blocks = htmlBlocks(html);
+  return blocks.map((block, index) =>
+    sidebarMainParagraph(
+      [new TextRun({ text: blockPrefix(block) + block.text, size: 20, color: "374151", font: "Calibri" })],
+      { after: index === blocks.length - 1 ? after : 40 }
+    )
+  );
+}
+
 function sidebarHeading(label) {
   return sidebarMainParagraph(
     [new TextRun({ text: label.toUpperCase(), bold: true, size: 18, color: "222222", font: "Calibri", characterSpacing: 60 })],
@@ -1259,7 +1228,7 @@ function buildSidebar(data) {
 
   if (p.summary) {
     main.push(sidebarHeading("About Me"));
-    main.push(sidebarMainParagraph([new TextRun({ text: stripHtml(p.summary), size: 20, color: "374151", font: "Calibri" })], { after: 80 }));
+    main.push(...sidebarDescriptionParagraphs(p.summary, 80));
   }
 
   if (data.experience && data.experience.length) {
@@ -1279,9 +1248,7 @@ function buildSidebar(data) {
       if (place) {
         main.push(sidebarMainParagraph([new TextRun({ text: place, italics: true, size: 20, color: "4B5563", font: "Calibri" })], { after: 40 }));
       }
-      if (exp.description) {
-        main.push(sidebarMainParagraph([new TextRun({ text: stripHtml(exp.description), size: 20, color: "374151", font: "Calibri" })], { after: 80 }));
-      }
+      main.push(...sidebarDescriptionParagraphs(exp.description, 80));
     });
   }
 
@@ -1289,7 +1256,7 @@ function buildSidebar(data) {
     ["Projects", data.projects, (item) => ({ title: item.name, sub: item.technologies, date: item.date, body: item.description })],
     ["Achievements", data.achievements, (item) => ({ title: item.title, date: item.date, body: item.description })],
     ["Awards", data.awards, (item) => ({ title: item.title, sub: item.issuer, date: item.date, body: item.description })],
-    ["Certifications", data.certifications, (item) => ({ title: item.name, sub: item.issuer, date: item.date, note: item.credentialId ? "Credential ID: " + item.credentialId : "", extra: expiryText(item.expiryDate), body: stripHtml(item.description) })],
+    ["Certifications", data.certifications, (item) => ({ title: item.name, sub: item.issuer, date: item.date, note: item.credentialId ? "Credential ID: " + item.credentialId : "", extra: expiryText(item.expiryDate), body: item.description })],
     ["Publications", data.publications, (item) => ({ title: item.title, sub: item.journal, note: item.authors ? "Authors: " + item.authors : "", date: item.date, link: item.link })],
   ];
   extraSections.forEach(([label, items, mapItem]) => {
@@ -1312,7 +1279,7 @@ function buildSidebar(data) {
       if (row.extra) main.push(sidebarMainParagraph([new TextRun({ text: row.extra, size: 18, color: "4B5563", font: "Calibri" })], { after: 20 }));
       const link = publicationLinkParagraph(row.link, { size: 18, linkColor: LINK_BLUE, font: "Calibri", after: 60 });
       if (link) main.push(link);
-      if (row.body) main.push(sidebarMainParagraph([new TextRun({ text: stripHtml(row.body), size: 20, color: "374151", font: "Calibri" })], { after: 60 }));
+      main.push(...sidebarDescriptionParagraphs(row.body, 60));
     });
   });
 
@@ -1370,4 +1337,4 @@ async function buildDocx(resumeData, templateId) {
   return Packer.toBuffer(doc);
 }
 
-module.exports = { buildDocx };
+module.exports = { buildDocx, htmlBlocks };

@@ -1,8 +1,8 @@
 import { isRichTextEmpty, type ResumeData } from "@/utils/resumeRules";
 
-// Guest work stays in this browser only. A version is stored in Supabase
-// only after the user confirms the save prompt. Each CV keeps 10 versions;
-// the database trigger drops the oldest.
+// Guest work stays in this browser only. A signed-in header Save, and a
+// sign-in that promised to save this version, store one snapshot. Autosave
+// does not. Each CV keeps 10 versions; the database trigger drops the oldest.
 
 const DRAFT_KEY = "two-resume-builder-draft";
 const PENDING_KEY = "two-resume-builder-pending";
@@ -90,6 +90,48 @@ export function needsSavePrompt(
 export function resumeTitle(data: ResumeData): string {
   const name = data.personalInfo.fullName.trim();
   return name ? name.slice(0, 120) : "Untitled CV";
+}
+
+export type VersionWriteSource = "explicit-save" | "promised-version" | "keep-draft";
+
+export function versionSaveSource(action: AccountAction["type"] | "header-save"): VersionWriteSource {
+  if (action === "save-draft") return "keep-draft";
+  if (action === "download") return "promised-version";
+  return "explicit-save";
+}
+
+// Header Save and the download sign-in promise write one version.
+// "Keep the work so far" stays a draft. An unchanged CV, or a snapshot
+// already stored as the latest version, does not insert another row.
+export function saveRecordsVersion(input: {
+  source: VersionWriteSource;
+  changed: boolean;
+  matchesLatestVersion: boolean;
+}): boolean {
+  if (input.source === "keep-draft") return false;
+  if (!input.changed || input.matchesLatestVersion) return false;
+  return true;
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value ?? null);
+}
+
+export function versionSnapshotsMatch(
+  data: ResumeData,
+  templateId: string,
+  otherData: ResumeData,
+  otherTemplateId: string
+): boolean {
+  return templateId === otherTemplateId && stableJson(data) === stableJson(otherData);
 }
 
 function storage(): Storage | null {

@@ -10,6 +10,8 @@ import {
   needsSavePrompt,
   readPending,
   resumeSnapshot,
+  saveRecordsVersion,
+  versionSaveSource,
   writeDraft,
   writePending,
   type AccountAction,
@@ -147,6 +149,16 @@ export function useResumeAccount({
     rememberSave(id);
   }, [rememberSave]);
 
+  const persistForAction = useCallback(async (actionType: AccountAction["type"]) => {
+    const writeVersion = saveRecordsVersion({
+      source: versionSaveSource(actionType),
+      changed: true,
+      matchesLatestVersion: false,
+    });
+    if (writeVersion) await persistVersion();
+    else await persistDraft();
+  }, [persistDraft, persistVersion]);
+
   const openResume = useCallback(async (id: string) => {
     applySavedResume(await getResume(id));
   }, [applySavedResume]);
@@ -224,8 +236,7 @@ export function useResumeAccount({
     }
     setSaving(true);
     try {
-      if (action.type === "save-draft") await persistDraft();
-      else await persistVersion();
+      await persistForAction(action.type);
       setPrompt(null);
       if (action.type !== "save-only" && action.type !== "save-draft") await runAction(action);
     } catch (error) {
@@ -237,7 +248,7 @@ export function useResumeAccount({
     } finally {
       setSaving(false);
     }
-  }, [persistDraft, persistVersion, runAction, showError, signInWithGoogle]);
+  }, [persistForAction, runAction, showError, signInWithGoogle]);
 
   const skipPrompt = useCallback(() => {
     const action = promptRef.current;
@@ -279,8 +290,7 @@ export function useResumeAccount({
     void (async () => {
       try {
         if (pending?.saveFirst && user) {
-          if (pending.type === "save-draft") await persistDraft();
-          else await persistVersion();
+          await persistForAction(pending.type);
         }
         if (pending && pending.type !== "save-only" && pending.type !== "save-draft") {
           await runAction(pending);
@@ -294,7 +304,7 @@ export function useResumeAccount({
         showError(error, "Could not restore your CV");
       }
     })();
-  }, [applySavedResume, persistDraft, persistVersion, ready, runAction, showError, user]);
+  }, [applySavedResume, persistForAction, ready, runAction, showError, user]);
 
   useEffect(() => {
     if (!ready || user || !hasOAuthReturn()) return;
@@ -346,7 +356,12 @@ export function useResumeAccount({
       setPrompt({ type: "save-draft" });
       return;
     }
-    if (!needsSavePrompt(resumeRef.current, templateRef.current, savedSnapshotRef.current)) {
+    const changed = needsSavePrompt(resumeRef.current, templateRef.current, savedSnapshotRef.current);
+    if (!saveRecordsVersion({
+      source: versionSaveSource("header-save"),
+      changed,
+      matchesLatestVersion: false,
+    })) {
       toast({
         title: "Already saved",
         description: "This CV is already saved.",
@@ -354,10 +369,16 @@ export function useResumeAccount({
       return;
     }
     setSaving(true);
-    void persistDraft()
+    void persistVersion()
+      .then(() => {
+        toast({
+          title: "CV saved",
+          description: "This version is saved. Only the latest 10 are kept.",
+        });
+      })
       .catch((error) => showError(error, "Could not save this CV"))
       .finally(() => setSaving(false));
-  }, [persistDraft, ready, showError, toast]);
+  }, [persistVersion, ready, showError, toast]);
 
   const startGoogleSignIn = useCallback(async () => {
     skipLeaveRef.current = true;

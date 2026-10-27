@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import JSZip from "jszip";
 
 const require = createRequire(import.meta.url);
-const { buildDocx } = require("../../buildResumeDocx.cjs");
+const { buildDocx, htmlBlocks } = require("../../buildResumeDocx.cjs");
 
 const resume = {
   personalInfo: {
@@ -220,4 +220,63 @@ describe("Word certification expiry and publication links", () => {
     expect(text).not.toContain("GPA");
     expect(text).not.toContain("8.6");
   });
+});
+
+describe("Word list items", () => {
+  const listed = {
+    ...resume,
+    experience: [{
+      id: "exp-1",
+      company: "Northstar Labs",
+      position: "Engineer",
+      startDate: "2022-01-01",
+      endDate: "2023-01-01",
+      description: "<ul><li>Prepared libraries for 120+ samples</li><li>Analysed qPCR data</li></ul>",
+    }],
+    projects: [{
+      id: "proj-1",
+      name: "Assay panel",
+      description: "<ul><li>Designed the assay</li><li>Shared the protocol</li></ul>",
+    }],
+    certifications: [{
+      id: "cert-1",
+      name: "AWS Solutions Architect",
+      issuer: "Amazon Web Services",
+      date: "2023-04-01",
+      description: "<ul><li>Covers VPC design</li><li>Cost controls</li></ul>",
+    }],
+  };
+
+  it("splits a list into blocks and leaves a plain paragraph as one block", () => {
+    expect(htmlBlocks("<ul><li>Prepared libraries for 120+ samples</li><li>Analysed qPCR data</li></ul>")).toEqual([
+      { kind: "ul", text: "Prepared libraries for 120+ samples", number: 1 },
+      { kind: "ul", text: "Analysed qPCR data", number: 2 },
+    ]);
+    expect(htmlBlocks("<ol><li>First result</li><li>Second result</li></ol>")).toEqual([
+      { kind: "ol", text: "First result", number: 1 },
+      { kind: "ol", text: "Second result", number: 2 },
+    ]);
+    expect(htmlBlocks('<ol><li data-list="bullet">First result</li><li data-list="bullet">Second result</li></ol>').map((block) => block.kind)).toEqual(["ul", "ul"]);
+    expect(htmlBlocks("<p>One paragraph.</p><p>Still one line.</p>")).toEqual([
+      { kind: "p", text: "One paragraph. Still one line." },
+    ]);
+    expect(htmlBlocks("<p><br></p>")).toEqual([]);
+    expect(htmlBlocks("")).toEqual([]);
+  });
+
+  it.each(["resumake-classic", "sidebar"])(
+    "%s puts each experience, project, and certification item on its own line",
+    async (template) => {
+      const { text } = await wordParts(template, listed);
+      expect(text).toContain("Prepared libraries for 120+ samples");
+      expect(text).toContain("Analysed qPCR data");
+      expect(text).not.toContain("Prepared libraries for 120+ samples Analysed qPCR data");
+      expect(text).toContain("Designed the assay");
+      expect(text).toContain("Shared the protocol");
+      expect(text).not.toContain("Designed the assay Shared the protocol");
+      expect(text).toContain("Covers VPC design");
+      expect(text).toContain("Cost controls");
+      expect(text).not.toContain("Covers VPC design Cost controls");
+    }
+  );
 });

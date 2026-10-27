@@ -1,6 +1,6 @@
 import { getSupabaseClient } from "@/lib/supabase";
 import type { ResumeData } from "@/utils/resumeRules";
-import { resumeTitle } from "@/utils/resumeAccount";
+import { resumeTitle, saveRecordsVersion, versionSnapshotsMatch } from "@/utils/resumeAccount";
 
 export type SavedResume = {
   id: string;
@@ -140,6 +140,20 @@ export async function saveResumeVersion(input: {
   resumeData: ResumeData;
 }): Promise<string> {
   const resumeId = await upsertResume(input);
+  const latest = await client()
+    .from("two_resume_builder_versions")
+    .select("template_id, resume_data")
+    .eq("resume_id", resumeId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (latest.error) throw new Error(message(latest.error, "Could not load versions"));
+  const row = latest.data?.[0];
+  const matchesLatestVersion = Boolean(
+    row?.resume_data && versionSnapshotsMatch(input.resumeData, input.templateId, row.resume_data, row.template_id)
+  );
+  if (!saveRecordsVersion({ source: "explicit-save", changed: true, matchesLatestVersion })) {
+    return resumeId;
+  }
   const { error: versionError } = await client().from("two_resume_builder_versions").insert({
     resume_id: resumeId,
     template_id: input.templateId,
