@@ -280,3 +280,39 @@ describe("Word list items", () => {
     }
   );
 });
+
+describe("ongoing education says Pursuing", () => {
+  const data = {
+    ...resume,
+    experience: [{
+      id: "exp-1",
+      company: "Northstar Labs",
+      position: "Intern",
+      startDate: "2024-06-01",
+      endDate: "",
+      current: true,
+      description: "",
+    }],
+    education: [{
+      id: "edu-1",
+      school: "University of Texas",
+      degree: "B.S. Computer Science",
+      startDate: "2022-08-01",
+      endDate: "",
+      current: true,
+    }],
+  };
+
+  it.each(["resumake-classic", "resumake-classic-single", "modern", "sidebar"])(
+    "%s keeps the start date, says Pursuing for study, and Present for a job",
+    async (template) => {
+      const { text } = await wordParts(template, data);
+      expect(text).toContain("Aug 2022");
+      expect(text).toContain("Pursuing");
+      expect(text).toContain("Jun 2024");
+      expect(text).toContain("Present");
+      expect(text).not.toContain("Aug 2022 - Present");
+      expect(text).not.toContain("Aug 2022 | Present");
+    }
+  );
+});

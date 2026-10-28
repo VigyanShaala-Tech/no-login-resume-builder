@@ -195,6 +195,11 @@ describe("formatPlace and formatDateRange", () => {
     expect(formatDateRange("2020-01-01", "", true)).toBe("Jan 2020 - Present");
   });
 
+  it("keeps the start date and says Pursuing when education is ongoing", () => {
+    expect(formatDateRange("2020-01-01", "", true, " - ", "Pursuing")).toBe("Jan 2020 - Pursuing");
+    expect(formatDateRange("2020-01-01", "", true, " | ", "Pursuing")).toBe("Jan 2020 | Pursuing");
+  });
+
   it("omits empty dates and can use a pipe separator", () => {
     expect(formatDateRange("", "", false)).toBe("");
     expect(formatDateRange("2020-01-01", "2021-06-01", false, " | ")).toBe("Jan 2020 | Jun 2021");

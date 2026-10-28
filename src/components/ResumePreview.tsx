@@ -174,7 +174,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
     }
   ) => {
     const lines = educationEntryLines(edu);
-    const dateText = formatDateRange(edu.startDate, edu.endDate, edu.current, options.dateSeparator);
+    const dateText = formatDateRange(edu.startDate, edu.endDate, edu.current, options.dateSeparator, "Pursuing");
     return (
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -2259,7 +2259,7 @@ export const ResumePreview = ({ resumeData, template }: ResumePreviewProps) => {
               <div className="sidebar-edu-list">
                 {resumeData.education.map((edu) => {
                   const lines = educationEntryLines(edu);
-                  const dateText = formatDateRange(edu.startDate, edu.endDate, edu.current, " - ");
+                  const dateText = formatDateRange(edu.startDate, edu.endDate, edu.current, " - ", "Pursuing");
                   return (
                     <div key={edu.id} className="sidebar-edu">
                       {lines.place && <div className="sidebar-edu-place">{lines.place}</div>}

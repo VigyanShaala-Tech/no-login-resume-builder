@@ -439,7 +439,7 @@ function buildResumakeClassic(data) {
   if (data.education && data.education.length > 0) {
     children.push(...sectionHeadingWithLine("Education"));
     data.education.forEach((edu) => {
-      const dateStr = `${formatDate(edu.startDate)} - ${edu.current ? "Present" : formatDate(edu.endDate)}`;
+      const dateStr = formatDateRange(edu.startDate, edu.endDate, edu.current, " - ", "Pursuing");
       children.push(...educationParagraphs(edu, dateStr, false));
     });
   }
@@ -652,7 +652,7 @@ function buildResumakeClassicSingle(data) {
   if (data.education && data.education.length > 0) {
     children.push(shadedSectionHeading("Education"));
     data.education.forEach((edu) => {
-      const dateStr = `${formatDate(edu.startDate)} | ${edu.current ? "Present" : formatDate(edu.endDate)}`;
+      const dateStr = formatDateRange(edu.startDate, edu.endDate, edu.current, " | ", "Pursuing");
       children.push(...educationParagraphs(edu, dateStr, true));
     });
   }
@@ -757,8 +757,8 @@ function formatPlace(name, location) {
   return joinFilled([name, location], ", ");
 }
 
-function formatDateRange(start, end, current, separator) {
-  return joinFilled([formatDate(start), current ? "Present" : formatDate(end)], separator || " - ");
+function formatDateRange(start, end, current, separator, ongoing) {
+  return joinFilled([formatDate(start), current ? (ongoing || "Present") : formatDate(end)], separator || " - ");
 }
 
 function headingBar(text, color) {
@@ -845,7 +845,7 @@ function appendThemedSections(children, data, theme) {
   if (data.education && data.education.length > 0) {
     children.push(...heading(theme.labels.education));
     data.education.forEach((edu) => {
-      const dateStr = formatDateRange(edu.startDate, edu.endDate, edu.current, dateSep);
+      const dateStr = formatDateRange(edu.startDate, edu.endDate, edu.current, dateSep, "Pursuing");
       children.push(...educationParagraphs(edu, dateStr, false));
     });
   }
@@ -1097,9 +1097,9 @@ const SIDEBAR_PAGE = SIDEBAR_RAIL + SIDEBAR_MAIN;
 const noLine = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
 const noCellBorders = { top: noLine, bottom: noLine, left: noLine, right: noLine };
 
-function sidebarDateRange(start, end, current) {
+function sidebarDateRange(start, end, current, ongoing) {
   const left = formatDate(start);
-  const right = current ? "Present" : formatDate(end);
+  const right = current ? (ongoing || "Present") : formatDate(end);
   return [left, right].filter(Boolean).join(" - ");
 }
 
@@ -1197,7 +1197,7 @@ function buildSidebar(data) {
       const place = [edu.school, edu.location].filter((part) => part && String(part).trim()).join(", ");
       const field = edu.field ? String(edu.field).trim() : "";
       const score = formatEducationScore(edu);
-      const dates = sidebarDateRange(edu.startDate, edu.endDate, edu.current);
+      const dates = sidebarDateRange(edu.startDate, edu.endDate, edu.current, "Pursuing");
       if (place) rail.push(sidebarRailParagraph(place, { bold: true, size: 20, after: 20 }));
       if (edu.degree && String(edu.degree).trim()) rail.push(sidebarRailParagraph(String(edu.degree).trim(), { after: 20 }));
       if (field) rail.push(sidebarRailParagraph(field, { after: 20 }));

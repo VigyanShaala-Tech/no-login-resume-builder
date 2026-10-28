@@ -155,9 +155,10 @@ export function formatDateRange(
   start?: string,
   end?: string,
   current?: boolean,
-  separator = " - "
+  separator = " - ",
+  ongoingLabel = "Present"
 ): string {
-  return joinFilled([formatResumeDate(start), current ? "Present" : formatResumeDate(end)], separator);
+  return joinFilled([formatResumeDate(start), current ? ongoingLabel : formatResumeDate(end)], separator);
 }
 
 export const CONTACT_WEBSITE_LABEL = "Website";
