@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  PREVIEW_STACKED_MAX_PX,
   RESUME_PAPER_WIDTH_PX,
   previewScale,
   scaledPreviewHeight,
@@ -33,22 +32,18 @@ describe("previewScale", () => {
 });
 
 describe("shouldScalePreview", () => {
-  it("scales stacked layouts when the card is narrower than paper", () => {
-    expect(shouldScalePreview(360, 320)).toBe(true);
-    expect(shouldScalePreview(390, 340)).toBe(true);
-    expect(shouldScalePreview(430, 380)).toBe(true);
-    expect(shouldScalePreview(768, 680)).toBe(true);
-    expect(shouldScalePreview(PREVIEW_STACKED_MAX_PX, 700)).toBe(true);
+  it("scales when the card is narrower than the page", () => {
+    expect(shouldScalePreview(320)).toBe(true);
+    expect(shouldScalePreview(340)).toBe(true);
+    expect(shouldScalePreview(380)).toBe(true);
+    expect(shouldScalePreview(680)).toBe(true);
+    expect(shouldScalePreview(560)).toBe(true);
+    expect(shouldScalePreview(536)).toBe(true);
   });
 
-  it("does not scale the two-column desktop layout", () => {
-    expect(shouldScalePreview(1024, 560)).toBe(false);
-    expect(shouldScalePreview(1280, 536)).toBe(false);
-  });
-
-  it("does not scale a stacked card that already fits the paper", () => {
-    expect(shouldScalePreview(900, RESUME_PAPER_WIDTH_PX)).toBe(false);
-    expect(shouldScalePreview(900, 900)).toBe(false);
+  it("leaves the page unscaled when the card already fits", () => {
+    expect(shouldScalePreview(RESUME_PAPER_WIDTH_PX)).toBe(false);
+    expect(shouldScalePreview(900)).toBe(false);
   });
 });
 

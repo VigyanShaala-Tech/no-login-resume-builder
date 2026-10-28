@@ -1,11 +1,5 @@
-/** A4 at 96dpi. The on-screen preview is laid out at this width, then scaled. */
+/** A4 at 96dpi. The on-screen preview is laid out at this width, then scaled to the card. */
 export const RESUME_PAPER_WIDTH_PX = 794;
-
-/**
- * Form and preview stack below the `lg` breakpoint. At `lg` and up the preview
- * stays fluid in its column so desktop text is not shrunk to a miniature page.
- */
-export const PREVIEW_STACKED_MAX_PX = 1023;
 
 export function previewScale(availableWidth: number, paperWidth = RESUME_PAPER_WIDTH_PX): number {
   if (!Number.isFinite(availableWidth) || availableWidth <= 0) return 1;
@@ -14,8 +8,8 @@ export function previewScale(availableWidth: number, paperWidth = RESUME_PAPER_W
   return availableWidth / paperWidth;
 }
 
-export function shouldScalePreview(viewportWidth: number, availableWidth: number): boolean {
-  if (!Number.isFinite(viewportWidth) || viewportWidth > PREVIEW_STACKED_MAX_PX) return false;
+/** Shrink when the card is narrower than the page so line breaks stay the same as the PDF. */
+export function shouldScalePreview(availableWidth: number): boolean {
   return previewScale(availableWidth) < 1;
 }
 

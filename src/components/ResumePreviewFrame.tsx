@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   RESUME_PAPER_WIDTH_PX,
-  PREVIEW_STACKED_MAX_PX,
   previewScale,
   scaledPreviewHeight,
   shouldScalePreview,
 } from "@/utils/previewScale";
 
 /**
- * Fits the paper-width preview into the card on stacked (phone and tablet) layouts.
+ * Lays the preview out at page width, then shrinks it to the card.
  * The scale wrapper sits outside #resume-preview so PDF and Word HTML stay unscaled.
  */
 export function ResumePreviewFrame({ children }: { children: ReactNode }) {
@@ -24,9 +23,7 @@ export function ResumePreviewFrame({ children }: { children: ReactNode }) {
 
     const measure = () => {
       const available = frame.clientWidth;
-      const nextScale = shouldScalePreview(window.innerWidth, available)
-        ? previewScale(available)
-        : 1;
+      const nextScale = shouldScalePreview(available) ? previewScale(available) : 1;
       const nextHeight = nextScale < 1 ? scaledPreviewHeight(paper.scrollHeight, nextScale) : 0;
       setScale((prev) => (Math.abs(prev - nextScale) < 0.001 ? prev : nextScale));
       setFrameHeight((prev) => (Math.abs(prev - nextHeight) < 0.5 ? prev : nextHeight));
@@ -36,12 +33,7 @@ export function ResumePreviewFrame({ children }: { children: ReactNode }) {
     const observer = new ResizeObserver(measure);
     observer.observe(frame);
     observer.observe(paper);
-    const media = window.matchMedia(`(max-width: ${PREVIEW_STACKED_MAX_PX}px)`);
-    media.addEventListener("change", measure);
-    return () => {
-      observer.disconnect();
-      media.removeEventListener("change", measure);
-    };
+    return () => observer.disconnect();
   }, []);
 
   const scaled = scale < 1;

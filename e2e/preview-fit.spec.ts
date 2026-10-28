@@ -5,7 +5,7 @@ const VIEWPORTS = [
   { width: 390, height: 844, scale: "down" },
   { width: 430, height: 932, scale: "down" },
   { width: 768, height: 1024, scale: "down" },
-  { width: 1280, height: 800, scale: "none" },
+  { width: 1280, height: 800, scale: "down" },
 ] as const;
 
 test.beforeEach(async ({ page }) => {
