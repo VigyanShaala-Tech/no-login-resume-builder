@@ -116,7 +116,6 @@ export const storeResumeData = async (resumeData: ResumeData, templateId: string
         download_count: 1,
         last_downloaded: new Date().toISOString()
       })
-      .select()
 
     if (error) {
       console.error('Supabase error storing resume data:', error)
