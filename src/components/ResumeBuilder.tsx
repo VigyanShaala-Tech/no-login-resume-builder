@@ -17,6 +17,7 @@ import { ResumePreviewFrame } from "./ResumePreviewFrame";
 import { TemplateSelector } from "./TemplateSelector";
 import { DownloadChecklistDialog } from "./DownloadChecklistDialog";
 import { MyCvsDialog, SaveVersionDialog } from "./ResumeAccountDialogs";
+import { useAuth } from "@/hooks/useAuth";
 import { useResumeAccount } from "@/hooks/useResumeAccount";
 import { generatePDF, generateWord } from "@/utils/pdfGenerator";
 import { safeDownloadFilename, STORAGE_WAIT_MS, withTimeout, type ReadyDownload } from "@/utils/saveFile";
@@ -68,6 +69,7 @@ export const ResumeBuilder = () => {
   const [checklistOpen, setChecklistOpen] = useState(false);
   const [readyFile, setReadyFile] = useState<ReadyDownload | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const sections = [
     { id: "personal", label: "Personal", icon: User },
@@ -124,12 +126,19 @@ export const ResumeBuilder = () => {
       
       if (storageError) {
         console.error('Failed to store resume data:', storageError);
-        // Show error to user but don't block PDF download
-        toast({
-          title: "Data Storage Warning",
-          description: "Resume downloaded successfully, but data storage failed. Please check your connection.",
-          variant: "destructive",
-        });
+        if (!user) {
+          toast({
+            title: "Not signed in",
+            description: "Since you are not logged in, your data wasn't stored.",
+            className: "border-sky-200 bg-sky-50 text-sky-950",
+          });
+        } else {
+          toast({
+            title: "Data Storage Warning",
+            description: "Resume downloaded successfully, but data storage failed. Please check your connection.",
+            variant: "destructive",
+          });
+        }
       } else {
         console.log('Resume data stored successfully to Supabase');
       }
